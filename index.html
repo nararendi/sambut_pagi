@@ -1276,45 +1276,61 @@
               </div>
             </div>
 
-            <!-- Digital Clock HUD Card (Sleek Minimalis Dark Mode Card) -->
+            <!-- Digital Clock HUD Card (Futuristic & High-Precision Dark HUD) -->
             <div
-              class="p-4 rounded-2xl bg-gradient-to-br from-slate-900 to-[#071321] border border-slate-800 text-white shadow-md relative overflow-hidden">
-              <div
-                class="absolute -right-6 -bottom-6 w-24 h-24 bg-emerald-500/10 rounded-full blur-xl pointer-events-none">
-              </div>
+              class="relative overflow-hidden rounded-2xl bg-gradient-to-br from-slate-950 via-slate-900 to-[#071322] border border-slate-800/90 p-4 text-white shadow-xl shadow-slate-950/25">
+              <!-- Decorative ambient glow accents -->
+              <div class="pointer-events-none absolute -right-6 -bottom-6 h-28 w-28 rounded-full bg-emerald-500/15 blur-2xl"></div>
+              <div class="pointer-events-none absolute -left-6 -top-6 h-24 w-24 rounded-full bg-teal-500/10 blur-xl"></div>
 
-              <div class="flex items-center justify-between mb-2">
+              <!-- Top Bar: Live Radar + Threshold Metadata -->
+              <div class="relative z-10 flex items-center justify-between gap-2 border-b border-slate-800/80 pb-2.5">
                 <div class="flex items-center gap-2">
                   <span class="relative flex h-2 w-2">
-                    <span
-                      class="animate-ping absolute inline-flex h-full w-full rounded-full bg-emerald-400 opacity-75"></span>
-                    <span class="relative inline-flex rounded-full h-2 w-2 bg-emerald-500"></span>
+                    <span class="absolute inline-flex h-full w-full animate-ping rounded-full bg-emerald-400 opacity-75"></span>
+                    <span class="relative inline-flex h-2 w-2 rounded-full bg-emerald-500"></span>
                   </span>
-                  <span class="text-[10px] font-bold uppercase tracking-wider text-slate-400">Jam Presensi Aktif</span>
+                  <span class="text-[10px] sm:text-[10.5px] font-bold uppercase tracking-wider text-slate-300 font-mono">JAM PRESENSI AKTIF</span>
                 </div>
-                <span id="form-status-badge"
-                  class="inline-flex items-center px-2.5 py-0.5 rounded-full text-[10px] font-bold tracking-tight bg-emerald-500/20 text-emerald-300 border border-emerald-500/30 whitespace-nowrap">
-                  Otomatis
-                </span>
+                <div class="inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-md bg-slate-800/80 border border-slate-700/80 text-[10px] font-mono text-slate-300 shadow-sm">
+                  <span class="text-slate-400 font-normal">Batas:</span>
+                  <span class="text-emerald-400 font-bold tracking-tight">≤ 06.35 WIB</span>
+                </div>
               </div>
 
-              <div class="flex items-baseline justify-between pt-1">
-                <span id="form-live-clock"
-                  class="text-2xl sm:text-3xl font-extrabold font-mono tracking-wider text-emerald-400 whitespace-nowrap drop-shadow-sm">--:--:--
-                  WIB</span>
-                <span
-                  class="text-[10px] text-slate-400 font-mono bg-slate-800/90 px-2 py-0.5 rounded-md border border-slate-700/70 whitespace-nowrap">≤
-                  06.35</span>
+              <!-- Main HUD Display Console: Clock + Status Badge -->
+              <div class="relative z-10 my-3 rounded-xl bg-slate-950/70 border border-slate-800/80 p-3 sm:p-3.5 shadow-inner">
+                <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-2 sm:gap-4">
+                  <!-- Clock Digits with Monospace styling and glowing effect -->
+                  <div class="flex items-baseline gap-2">
+                    <span id="form-live-clock"
+                      class="text-3xl sm:text-4xl font-black font-mono tracking-wider text-emerald-400 select-all drop-shadow-[0_0_15px_rgba(52,211,153,0.35)]">--:--:--</span>
+                    <span
+                      class="text-[10px] font-extrabold font-mono tracking-widest text-emerald-300 bg-emerald-500/15 border border-emerald-500/30 px-1.5 py-0.5 rounded uppercase">WIB</span>
+                  </div>
+
+                  <!-- Live Status Pill (Tepat Waktu / Terlambat / OFF) -->
+                  <div class="flex items-center">
+                    <span id="form-status-badge"
+                      class="inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-bold tracking-tight bg-emerald-500/15 text-emerald-300 border border-emerald-500/30 whitespace-nowrap shadow-sm">
+                      <span class="w-1.5 h-1.5 rounded-full bg-emerald-400 animate-pulse"></span>
+                      <span>Otomatis</span>
+                    </span>
+                  </div>
+                </div>
               </div>
 
-              <p class="text-[10px] text-slate-400 pt-2.5 mt-2 border-t border-slate-800/80 flex items-center gap-1.5">
-                <svg class="w-3.5 h-3.5 text-emerald-400 shrink-0" fill="none" stroke="currentColor"
-                  viewBox="0 0 24 24">
-                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
-                    d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"></path>
-                </svg>
-                <span>Jam &amp; status ketepatan waktu otomatis dicatat saat disimpan.</span>
-              </p>
+              <!-- Bottom Helper Note: Precision Guidance -->
+              <div class="relative z-10 flex items-center justify-between text-[10.5px] text-slate-400 pt-0.5">
+                <div class="flex items-center gap-1.5">
+                  <svg class="h-3.5 w-3.5 text-emerald-400 shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                      d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"></path>
+                  </svg>
+                  <span>Waktu &amp; status otomatis terkunci saat klik Simpan</span>
+                </div>
+                <span class="text-[9.5px] text-slate-500 font-mono tracking-wider hidden sm:inline">REALTIME</span>
+              </div>
             </div>
 
             <!-- Form Fields (Kebal Redirect & Aman dari Iframe Sandbox) -->
@@ -3608,9 +3624,9 @@
       const mobileClockEl = document.getElementById('mobile-live-clock');
       if (mobileClockEl) mobileClockEl.innerText = timeStr;
 
-      // Update form live clock
+      // Update form live clock (hanya angka jam.menit.detik, WIB sudah berupa badge presisi tersendiri)
       const formClockEl = document.getElementById('form-live-clock');
-      if (formClockEl) formClockEl.innerText = timeStr;
+      if (formClockEl) formClockEl.innerText = `${h}.${m}.${s}`;
 
       // Update tanggal & jam berjalan di header Riwayat Presensi Hari Ini
       const presensiDateEl = document.getElementById('presensi-live-date');
@@ -3627,17 +3643,17 @@
       const presensiPiketSelect = document.getElementById('presensi-piket-select');
       if (statusBadge) {
         if (presensiPiketSelect && isOffStatus(presensiPiketSelect.value)) {
-          statusBadge.innerText = "OFF (Tidak Hadir)";
-          statusBadge.className = "inline-flex items-center px-2.5 py-0.5 rounded-full text-[10px] font-bold tracking-tight bg-slate-700/80 text-slate-300 border border-slate-600 whitespace-nowrap";
+          statusBadge.innerHTML = '<span class="w-1.5 h-1.5 rounded-full bg-slate-400"></span><span>OFF (Tidak Hadir)</span>';
+          statusBadge.className = "inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-bold tracking-tight bg-slate-800 text-slate-300 border border-slate-700 whitespace-nowrap shadow-sm";
         } else {
           const timeInMinutes = now.getHours() * 60 + now.getMinutes();
           const limitSambutPagi = 6 * 60 + 35; // 06.35 WIB
           if (timeInMinutes <= limitSambutPagi) {
-            statusBadge.innerText = "Tepat Waktu (≤ 06.35)";
-            statusBadge.className = "inline-flex items-center px-2.5 py-0.5 rounded-full text-[10px] font-bold tracking-tight bg-emerald-500/20 text-emerald-300 border border-emerald-500/30 whitespace-nowrap";
+            statusBadge.innerHTML = '<span class="w-1.5 h-1.5 rounded-full bg-emerald-400 animate-pulse"></span><span>Tepat Waktu (≤ 06.35)</span>';
+            statusBadge.className = "inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-bold tracking-tight bg-emerald-500/15 text-emerald-300 border border-emerald-500/30 whitespace-nowrap shadow-sm";
           } else {
-            statusBadge.innerText = "Terlambat (> 06.35)";
-            statusBadge.className = "inline-flex items-center px-2.5 py-0.5 rounded-full text-[10px] font-bold tracking-tight bg-amber-500/20 text-amber-300 border border-amber-500/30 whitespace-nowrap";
+            statusBadge.innerHTML = '<span class="w-1.5 h-1.5 rounded-full bg-amber-400"></span><span>Terlambat (> 06.35)</span>';
+            statusBadge.className = "inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-bold tracking-tight bg-amber-500/15 text-amber-300 border border-amber-500/30 whitespace-nowrap shadow-sm";
           }
         }
       }
