@@ -307,35 +307,35 @@
           <p class="text-xs text-slate-400 mt-1">Portal Kehadiran Guru &amp; Tenaga Kependidikan</p>
         </div>
 
-        <!-- Quick 1-Tap Login Selector (Memudahkan Petugas di Gerbang / Laptop) -->
+        <!-- Quick 1-Tap Login Selector (Khusus Petugas Piket Gerbang) -->
         <div class="mb-5 p-3 rounded-2xl bg-slate-800/60 border border-slate-700/60">
           <p class="text-[11px] font-semibold text-slate-400 uppercase tracking-wider mb-2 text-center flex items-center justify-center gap-1.5">
             <svg class="w-3.5 h-3.5 text-emerald-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
               <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 10V3L4 14h7v7l9-11h-7z"></path>
             </svg>
-            <span>Pilih Akses Cepat (1-Klik)</span>
+            <span>Akses Cepat Petugas (1-Klik)</span>
           </p>
-          <div class="grid grid-cols-2 gap-2">
+          <div>
             <button type="button" onclick="quickLogin('petugas')"
-              class="group flex flex-col items-center justify-center p-2.5 rounded-xl bg-slate-900/80 hover:bg-emerald-950/50 border border-slate-700 hover:border-emerald-500/70 transition-all duration-150 active:scale-95 text-center cursor-pointer shadow-sm">
-              <span class="text-xs font-bold text-white group-hover:text-emerald-300 flex items-center gap-1">
-                <span>📋</span> Petugas Piket
+              class="w-full group flex items-center justify-between px-3.5 py-2.5 rounded-xl bg-slate-900/80 hover:bg-emerald-950/50 border border-slate-700 hover:border-emerald-500/70 transition-all duration-150 active:scale-[0.99] text-center cursor-pointer shadow-sm">
+              <div class="flex items-center gap-2.5">
+                <span class="text-base">📋</span>
+                <div class="text-left">
+                  <span class="text-xs font-bold text-white group-hover:text-emerald-300 block">Masuk Petugas Piket</span>
+                  <span class="text-[10px] text-slate-400 group-hover:text-emerald-400/90 font-mono">@petugas &bull; Akses Presensi Gerbang</span>
+                </div>
+              </div>
+              <span class="px-2.5 py-1 rounded-lg text-[10px] font-bold bg-emerald-500/15 text-emerald-300 border border-emerald-500/30 group-hover:bg-emerald-500/25 transition flex items-center gap-1">
+                <span>1-Klik</span>
+                <span>&rarr;</span>
               </span>
-              <span class="text-[10px] text-slate-400 group-hover:text-emerald-400/90 font-mono mt-0.5">@petugas</span>
-            </button>
-            <button type="button" onclick="quickLogin('admin')"
-              class="group flex flex-col items-center justify-center p-2.5 rounded-xl bg-slate-900/80 hover:bg-emerald-950/50 border border-slate-700 hover:border-emerald-500/70 transition-all duration-150 active:scale-95 text-center cursor-pointer shadow-sm">
-              <span class="text-xs font-bold text-white group-hover:text-emerald-300 flex items-center gap-1">
-                <span>🛡️</span> Super User
-              </span>
-              <span class="text-[10px] text-slate-400 group-hover:text-emerald-400/90 font-mono mt-0.5">@admin</span>
             </button>
           </div>
         </div>
 
         <div class="relative flex items-center justify-center my-4">
           <div class="border-t border-slate-800 w-full"></div>
-          <span class="bg-slate-900 px-3 text-[11px] font-semibold text-slate-500 uppercase tracking-wider shrink-0">atau masuk manual</span>
+          <span class="bg-slate-900 px-3 text-[11px] font-semibold text-slate-500 uppercase tracking-wider shrink-0">atau masuk manual (Admin / Petugas)</span>
           <div class="border-t border-slate-800 w-full"></div>
         </div>
 
@@ -1367,7 +1367,7 @@
               <!-- Status (Sambut Pagi / Tidak Sambut Pagi / OFF) -->
               <div>
                 <label class="block text-xs font-bold text-slate-700 uppercase tracking-wider mb-1.5">Status</label>
-                <select id="presensi-piket-select"
+                <select id="presensi-piket-select" onchange="updateClock()"
                   class="w-full px-3.5 py-2.5 bg-slate-50 border border-slate-200 hover:border-slate-300 focus:bg-white focus:border-emerald-500 focus:ring-4 focus:ring-emerald-500/10 rounded-xl transition-all text-slate-800 text-sm font-medium">
                   <option value="Sambut Pagi" selected>Sambut Pagi</option>
                   <option value="Tidak Sambut Pagi">Tidak Sambut Pagi</option>
@@ -2722,8 +2722,10 @@
     }
 
     function quickLogin(role) {
+      // Hanya izinkan akses cepat untuk petugas piket, super user wajib login manual dengan kredensial
+      if (role !== 'petugas') return;
       const users = getUsersList();
-      const acc = users.find(a => a.role === role) || DEFAULT_INITIAL_ACCOUNTS.find(a => a.role === role);
+      const acc = users.find(a => a.role === 'petugas') || DEFAULT_INITIAL_ACCOUNTS.find(a => a.role === 'petugas');
       if (acc) {
         document.getElementById('login-username').value = acc.username;
         document.getElementById('login-password').value = acc.password;
@@ -3622,15 +3624,21 @@
 
       // Update live status badge in form
       const statusBadge = document.getElementById('form-status-badge');
+      const presensiPiketSelect = document.getElementById('presensi-piket-select');
       if (statusBadge) {
-        const timeInMinutes = now.getHours() * 60 + now.getMinutes();
-        const limitSambutPagi = 6 * 60 + 35; // 06.35 WIB
-        if (timeInMinutes <= limitSambutPagi) {
-          statusBadge.innerText = "Tepat Waktu (≤ 06.35)";
-          statusBadge.className = "inline-flex items-center px-2.5 py-0.5 rounded-full text-[10px] font-bold tracking-tight bg-emerald-500/20 text-emerald-300 border border-emerald-500/30 whitespace-nowrap";
+        if (presensiPiketSelect && isOffStatus(presensiPiketSelect.value)) {
+          statusBadge.innerText = "OFF (Tidak Hadir)";
+          statusBadge.className = "inline-flex items-center px-2.5 py-0.5 rounded-full text-[10px] font-bold tracking-tight bg-slate-700/80 text-slate-300 border border-slate-600 whitespace-nowrap";
         } else {
-          statusBadge.innerText = "Terlambat (> 06.35)";
-          statusBadge.className = "inline-flex items-center px-2.5 py-0.5 rounded-full text-[10px] font-bold tracking-tight bg-amber-500/20 text-amber-300 border border-amber-500/30 whitespace-nowrap";
+          const timeInMinutes = now.getHours() * 60 + now.getMinutes();
+          const limitSambutPagi = 6 * 60 + 35; // 06.35 WIB
+          if (timeInMinutes <= limitSambutPagi) {
+            statusBadge.innerText = "Tepat Waktu (≤ 06.35)";
+            statusBadge.className = "inline-flex items-center px-2.5 py-0.5 rounded-full text-[10px] font-bold tracking-tight bg-emerald-500/20 text-emerald-300 border border-emerald-500/30 whitespace-nowrap";
+          } else {
+            statusBadge.innerText = "Terlambat (> 06.35)";
+            statusBadge.className = "inline-flex items-center px-2.5 py-0.5 rounded-full text-[10px] font-bold tracking-tight bg-amber-500/20 text-amber-300 border border-amber-500/30 whitespace-nowrap";
+          }
         }
       }
     }
