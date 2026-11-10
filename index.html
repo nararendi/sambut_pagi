@@ -6,6 +6,12 @@
   <base target="_self">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>SMK Assalaam - Sambut Pagi Presensi</title>
+  <!-- PWA & Mobile Web App Meta -->
+  <link rel="manifest" href="manifest.json">
+  <meta name="theme-color" content="#0d1527">
+  <meta name="apple-mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+  <meta name="apple-mobile-web-app-title" content="Sambut Pagi">
   <!-- Google Fonts -->
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
@@ -154,6 +160,107 @@
     /* Hak Akses Super User: Sembunyikan elemen admin saat login selain Super User */
     body.is-petugas .role-admin-only {
       display: none !important;
+    }
+
+    /* ==============================================================================
+       ATURAN CETAK DOKUMEN RESMI (A4 PRINT STYLING & FORMAT RESMI SEKOLAH)
+       ============================================================================== */
+    @media screen {
+      .print-only {
+        display: none !important;
+      }
+    }
+
+    @media print {
+      @page {
+        size: A4 portrait;
+        margin: 12mm 15mm 15mm 15mm;
+      }
+
+      body {
+        background: #ffffff !important;
+        color: #000000 !important;
+        font-size: 10pt !important;
+        line-height: 1.35 !important;
+        -webkit-print-color-adjust: exact !important;
+        print-color-adjust: exact !important;
+      }
+
+      /* Sembunyikan elemen web yang tidak perlu */
+      #halaman-login,
+      #desktop-sidebar,
+      #mobile-header,
+      #mobile-drawer,
+      nav,
+      .no-print,
+      .rekap-web-controls,
+      #modal-koneksi,
+      #modal-impor,
+      #modal-tambah,
+      #modal-edit-presensi,
+      #modal-konfirmasi-hapus,
+      #modal-login-admin,
+      #modal-user,
+      .tab-content:not(#tab-rekap) {
+        display: none !important;
+      }
+
+      /* Tampilkan kontainer rekap secara penuh */
+      #app-wrapper,
+      main,
+      #tab-rekap,
+      #tabel-rekap-wrapper {
+        display: block !important;
+        width: 100% !important;
+        margin: 0 !important;
+        padding: 0 !important;
+        background: transparent !important;
+        border: none !important;
+        box-shadow: none !important;
+      }
+
+      .print-only {
+        display: block !important;
+      }
+
+      /* Format Tabel Cetak Resmi */
+      #tabel-rekap-presensi {
+        width: 100% !important;
+        border-collapse: collapse !important;
+        margin-top: 10px !important;
+        font-size: 9.5pt !important;
+      }
+
+      #tabel-rekap-presensi thead th {
+        background-color: #f1f5f9 !important;
+        color: #0f172a !important;
+        font-weight: 700 !important;
+        text-align: center !important;
+        border: 1px solid #334155 !important;
+        padding: 6px 6px !important;
+        text-transform: uppercase !important;
+        font-size: 8.5pt !important;
+      }
+
+      #tabel-rekap-presensi tbody td {
+        border: 1px solid #475569 !important;
+        padding: 5px 6px !important;
+        color: #000000 !important;
+        font-size: 9pt !important;
+      }
+
+      #tabel-rekap-presensi tbody tr:nth-child(even) {
+        background-color: #f8fafc !important;
+      }
+
+      #tabel-rekap-presensi tr {
+        page-break-inside: avoid !important;
+      }
+
+      #print-pengesahan {
+        page-break-inside: avoid !important;
+        margin-top: 28px !important;
+      }
     }
   </style>
 </head>
@@ -1358,9 +1465,61 @@
 
       <!-- ==================== TAB 4: REKAP LAPORAN ==================== -->
       <section id="tab-rekap" class="tab-content hidden">
-        <!-- Header Minimalis & Keren -->
-        <div
-          class="mb-6 pb-4 border-b border-slate-200/80 flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
+
+        <!-- ==================== KOP SURAT RESMI CETAK (Hanya Muncul Saat Dicetak / Print) ==================== -->
+        <div id="print-kop-surat" class="print-only mb-4 text-center">
+          <!-- Kop Yayasan & Sekolah -->
+          <div class="flex items-center justify-between border-b-2 border-slate-900 pb-3">
+            <div class="w-16 h-16 rounded-xl bg-emerald-600 text-slate-950 font-black text-2xl flex items-center justify-center shrink-0 border border-slate-900">
+              <span class="text-white text-2xl font-black">A</span>
+            </div>
+            <div class="flex-1 text-center px-4">
+              <p class="text-xs font-bold uppercase tracking-widest text-slate-700">Yayasan Assalaam Bandung</p>
+              <h1 class="text-xl font-black uppercase tracking-tight text-slate-950 leading-tight">SMK ASSALAAM BANDUNG</h1>
+              <p class="text-[10px] text-slate-600 leading-tight mt-0.5">
+                TERAKREDITASI "A" (UNGGUL) &bull; SK Badan Akreditasi Nasional Sekolah/Madrasah<br>
+                Jl. Situ Tarate Jl. Terusan Cibaduyut, Cangkuang Kulon, Kec. Dayeuhkolot, Kab. Bandung 40265<br>
+                Telp: (022) 5420220 &bull; Website: www.smkassalaam.sch.id &bull; Email: info@smkassalaam.sch.id
+              </p>
+            </div>
+            <div class="w-16 shrink-0"></div>
+          </div>
+          <!-- Garis Ganda Kop Surat -->
+          <div class="border-b border-slate-900 mt-0.5 mb-3"></div>
+
+          <!-- Judul Laporan Resmi -->
+          <div class="text-center my-3">
+            <h2 class="text-base font-black uppercase text-slate-950 tracking-wider underline">
+              LAPORAN REKAPITULASI PRESENSI SAMBUT PAGI
+            </h2>
+            <p class="text-xs font-bold uppercase text-slate-800 tracking-wide mt-0.5">
+              GURU DAN TENAGA KEPENDIDIKAN
+            </p>
+          </div>
+
+          <!-- Meta Informasi Laporan Cetak -->
+          <div class="text-[11px] text-slate-800 flex justify-between items-end border-b border-slate-400 pb-2 mb-2 text-left">
+            <div class="space-y-0.5">
+              <p><span class="font-bold text-slate-900">Hari, Tanggal :</span> <span id="print-meta-tanggal" class="font-bold text-slate-950">-</span></p>
+              <p><span class="font-bold text-slate-900">Status Filter :</span> <span id="print-meta-status">-</span></p>
+            </div>
+            <div class="text-right space-y-0.5">
+              <p><span class="font-bold text-slate-900">Batas Tepat Waktu :</span> <span>Pukul 06.35 WIB</span></p>
+              <p><span class="font-bold text-slate-900">Waktu Cetak :</span> <span id="print-meta-waktu-cetak" class="font-mono text-[10px]">-</span></p>
+            </div>
+          </div>
+
+          <!-- Ringkasan Statistik Cetak -->
+          <div class="grid grid-cols-4 gap-2 text-center text-[10px] py-1 bg-slate-100 border border-slate-300 rounded font-semibold text-slate-800 mb-2">
+            <div>Total Hadir: <span id="print-stat-total" class="font-bold text-slate-950">0</span></div>
+            <div>Sambut Pagi: <span id="print-stat-piket" class="font-bold text-emerald-800">0</span></div>
+            <div>Tidak Sambut: <span id="print-stat-tidak" class="font-bold text-slate-700">0</span></div>
+            <div>Belum Hadir: <span id="print-stat-belum" class="font-bold text-amber-800">0</span></div>
+          </div>
+        </div>
+
+        <!-- ==================== HEADER WEB INTERAKTIF (Disembunyikan Saat Cetak) ==================== -->
+        <div class="rekap-web-controls mb-6 pb-4 border-b border-slate-200/80 flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
           <div>
             <div class="flex items-center gap-2 mb-1">
               <span
@@ -1371,13 +1530,13 @@
               <span class="text-xs text-slate-500 font-medium">SMK Assalaam Bandung</span>
             </div>
             <h2 class="text-xl sm:text-2xl font-extrabold text-slate-900 tracking-tight">Rekap Laporan Presensi</h2>
-            <p class="text-xs sm:text-sm text-slate-500 mt-0.5">Laporan rekapitulasi kehadiran sambut pagi pegawai</p>
+            <p class="text-xs sm:text-sm text-slate-500 mt-0.5">Laporan rekapitulasi kehadiran sambut pagi guru &amp; tenaga kependidikan</p>
           </div>
 
           <div class="flex items-center gap-2.5 flex-wrap">
             <!-- Unduh Excel -->
             <button onclick="unduhRekapExcel()"
-              class="inline-flex items-center gap-2 px-4 py-2.5 bg-gradient-to-r from-emerald-600 to-teal-600 hover:from-emerald-500 hover:to-teal-500 text-white rounded-xl text-xs sm:text-sm font-semibold shadow-md shadow-emerald-600/20 transition active:scale-95"
+              class="inline-flex items-center gap-2 px-4 py-2.5 bg-gradient-to-r from-emerald-600 to-teal-600 hover:from-emerald-500 hover:to-teal-500 text-white rounded-xl text-xs sm:text-sm font-semibold shadow-md shadow-emerald-600/20 transition active:scale-95 cursor-pointer"
               title="Unduh berkas Excel laporan rekap">
               <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
@@ -1387,8 +1546,9 @@
               <span>Unduh Rekap (.xlsx)</span>
             </button>
             <!-- Cetak Laporan -->
-            <button onclick="window.print()"
-              class="inline-flex items-center gap-2 px-4 py-2.5 bg-slate-900 hover:bg-slate-800 text-white rounded-xl text-xs sm:text-sm font-semibold shadow-md transition active:scale-95">
+            <button onclick="cetakRekapLaporan()"
+              class="inline-flex items-center gap-2 px-4 py-2.5 bg-slate-900 hover:bg-slate-800 text-white rounded-xl text-xs sm:text-sm font-semibold shadow-md transition active:scale-95 cursor-pointer"
+              title="Cetak Dokumen Rekap Resmi (A4)">
               <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
                   d="M17 17h2a2 2 0 002-2v-4a2 2 0 00-2-2H5a2 2 0 00-2 2v4a2 2 0 002 2h2m2 4h6a2 2 0 002-2v-4a2 2 0 00-2-2H9a2 2 0 00-2 2v4a2 2 0 002 2zm8-12V5a2 2 0 00-2-2H9a2 2 0 00-2 2v4h10z">
@@ -1399,9 +1559,9 @@
           </div>
         </div>
 
-        <!-- Filter Bar Rekap (Minimalis & Rapi) -->
+        <!-- Filter Bar Rekap (Disembunyikan Saat Cetak) -->
         <div
-          class="bg-white border border-slate-200/90 rounded-2xl p-3 sm:p-4 shadow-[0_2px_10px_rgba(15,23,42,0.03)] mb-6 flex flex-col sm:flex-row items-center justify-between gap-3">
+          class="rekap-web-controls bg-white border border-slate-200/90 rounded-2xl p-3 sm:p-4 shadow-[0_2px_10px_rgba(15,23,42,0.03)] mb-6 flex flex-col sm:flex-row items-center justify-between gap-3">
           <div class="flex items-center gap-3 w-full sm:w-auto flex-wrap">
             <!-- Filter Tanggal -->
             <div class="flex items-center gap-2">
@@ -1412,7 +1572,7 @@
 
             <!-- Filter Status -->
             <div class="flex items-center gap-2">
-              <label class="text-[11px] font-bold text-slate-400 uppercase tracking-wider">Status:</label>
+              <label class="text-[11px] font-bold text-slate-400 uppercase tracking-wider">Status Sambut:</label>
               <select id="rekap-filter-status" onchange="renderRekapLaporan()"
                 class="px-3 py-1.5 bg-slate-50 border border-slate-200 hover:border-slate-300 focus:bg-white focus:border-emerald-500 rounded-xl text-xs font-semibold text-slate-700 focus:outline-none focus:ring-2 focus:ring-emerald-500/20 transition">
                 <option value="">Semua Status</option>
@@ -1427,8 +1587,8 @@
           </div>
         </div>
 
-        <!-- Ringkasan Statistik Rekap (4 Mini Cards Minimalis) -->
-        <div class="grid grid-cols-2 sm:grid-cols-4 gap-3.5 mb-6">
+        <!-- Ringkasan Statistik Rekap Web (Disembunyikan Saat Cetak) -->
+        <div class="rekap-web-controls grid grid-cols-2 sm:grid-cols-4 gap-3.5 mb-6">
           <div
             class="bg-white border border-slate-200/80 rounded-2xl p-4 shadow-[0_2px_10px_rgba(15,23,42,0.03)] flex items-center justify-between">
             <div>
@@ -1484,20 +1644,21 @@
           </div>
         </div>
 
-        <!-- Tabel Rekap Presensi -->
-        <div
+        <!-- ==================== TABEL REKAP PRESENSI LENGKAP ==================== -->
+        <div id="tabel-rekap-wrapper"
           class="bg-white border border-slate-200/80 rounded-2xl shadow-[0_2px_12px_rgba(15,23,42,0.04)] overflow-hidden min-h-[320px]">
           <div class="overflow-x-auto">
             <table class="w-full text-left text-sm text-slate-600" id="tabel-rekap-presensi">
               <thead
-                class="bg-slate-50/90 border-b border-slate-200 text-[11px] uppercase font-bold text-slate-500 tracking-wider">
+                class="bg-slate-50/90 border-b border-slate-200 text-[11px] uppercase font-bold text-slate-600 tracking-wider">
                 <tr>
-                  <th class="px-4 py-3.5 w-12 text-center">No</th>
-                  <th class="px-4 py-3.5">Nama Pegawai</th>
-                  <th class="px-4 py-3.5">Jabatan / Tugas</th>
-                  <th class="px-4 py-3.5 text-center">Jam Kehadiran</th>
-                  <th class="px-4 py-3.5">Status</th>
-                  <th class="px-4 py-3.5">Keterangan</th>
+                  <th class="px-3.5 py-3 w-12 text-center">No</th>
+                  <th class="px-3.5 py-3">Nama Guru &amp; Karyawan</th>
+                  <th class="px-3.5 py-3">Jabatan / Tugas</th>
+                  <th class="px-3.5 py-3 text-center">Jam Kehadiran</th>
+                  <th class="px-3.5 py-3 text-center">Ketepatan Waktu</th>
+                  <th class="px-3.5 py-3 text-center">Status Sambut Pagi</th>
+                  <th class="px-3.5 py-3">Keterangan</th>
                 </tr>
               </thead>
               <tbody id="rekap-tbody" class="divide-y divide-slate-100">
@@ -1509,6 +1670,27 @@
             </div>
           </div>
         </div>
+
+        <!-- ==================== LEMBAR PENGESAHAN CETAK (Hanya Muncul Saat Dicetak) ==================== -->
+        <div id="print-pengesahan" class="print-only mt-8 text-xs text-slate-900">
+          <div class="flex justify-between items-start px-6">
+            <div class="text-center w-64">
+              <p>Mengetahui,</p>
+              <p class="font-bold text-xs mt-0.5">Kepala SMK Assalaam Bandung</p>
+              <div class="h-20"></div>
+              <p class="font-bold underline text-xs">M. Lutfi Zuhaer, S.T.</p>
+              <p class="text-[10px] text-slate-600">NIP/NUPTK: -</p>
+            </div>
+            <div class="text-center w-64">
+              <p>Bandung, <span id="print-tgl-pengesahan">-</span></p>
+              <p class="font-bold text-xs mt-0.5">Koordinator Piket Sambut Pagi</p>
+              <div class="h-20"></div>
+              <p id="print-nama-petugas" class="font-bold underline text-xs">Petugas Piket</p>
+              <p class="text-[10px] text-slate-600">Petugas Sambut Pagi</p>
+            </div>
+          </div>
+        </div>
+
       </section>
 
       <!-- ==================== TAB 5: PENGATURAN USER & KEAMANAN AKUN ==================== -->
@@ -4553,35 +4735,106 @@
 
         const initials = getInitials(item.nama);
         const avatarStyle = getAvatarClass(item.nama);
+
+        // Standarisasi Status Sambut Pagi
         const statusVal = (item.piket === 'Tidak Sambut Pagi' || item.piket === 'Bukan Petugas Piket') ? 'Tidak Sambut Pagi' : 'Sambut Pagi';
-        const badgeStyle = statusVal === 'Sambut Pagi'
+        const badgePiketStyle = statusVal === 'Sambut Pagi'
           ? 'bg-emerald-50 text-emerald-700 border border-emerald-200/80'
           : 'bg-slate-100 text-slate-700 border border-slate-200/80';
 
+        // Ketepatan Waktu
+        let statusKetepatan = item.status || 'Tepat Waktu (≤ 06.35)';
+        const isLate = statusKetepatan.toLowerCase().includes('terlambat');
+        const badgeKetepatanStyle = isLate
+          ? 'bg-amber-50 text-amber-700 border border-amber-200/80'
+          : 'bg-emerald-50 text-emerald-700 border border-emerald-200/80';
+
         tr.innerHTML = `
-          <td class="px-4 py-3.5 text-center text-xs text-slate-400 font-medium">${idx + 1}</td>
-          <td class="px-4 py-3.5">
-            <div class="flex items-center gap-3">
-              <div class="w-8 h-8 rounded-xl font-extrabold text-xs flex items-center justify-center border shrink-0 ${avatarStyle}">
+          <td class="px-3.5 py-3 text-center text-xs text-slate-400 font-medium">${idx + 1}</td>
+          <td class="px-3.5 py-3">
+            <div class="flex items-center gap-2.5">
+              <div class="no-print w-7 h-7 rounded-lg font-extrabold text-[10px] flex items-center justify-center border shrink-0 ${avatarStyle}">
                 ${initials}
               </div>
-              <div class="min-w-0">
-                <div class="font-bold text-slate-900 leading-snug">${escapeHtml(item.nama)}</div>
-                <div class="text-[11px] text-slate-400">Pegawai SMK Assalaam</div>
-              </div>
+              <div class="font-bold text-slate-900 text-xs sm:text-sm">${escapeHtml(item.nama)}</div>
             </div>
           </td>
-          <td class="px-4 py-3.5 text-xs text-slate-600">
+          <td class="px-3.5 py-3 text-xs text-slate-700">
             <span class="inline-flex items-center px-2 py-0.5 rounded-md text-xs font-medium bg-slate-100 text-slate-700 border border-slate-200/60">${escapeHtml(item.jabatan || '-')}</span>
           </td>
-          <td class="px-4 py-3.5 text-center font-mono text-xs font-bold text-slate-800 whitespace-nowrap">${escapeHtml(item.jam)}</td>
-          <td class="px-4 py-3.5 text-xs text-slate-600">
-            <span class="inline-flex items-center px-2 py-0.5 rounded-md text-xs font-semibold ${badgeStyle}">${statusVal}</span>
+          <td class="px-3.5 py-3 text-center font-mono text-xs font-bold text-slate-800 whitespace-nowrap">${escapeHtml(item.jam)}</td>
+          <td class="px-3.5 py-3 text-center whitespace-nowrap">
+            <span class="inline-flex items-center px-2 py-0.5 rounded-md text-xs font-semibold ${badgeKetepatanStyle}">${escapeHtml(statusKetepatan)}</span>
           </td>
-          <td class="px-4 py-3.5 text-xs text-slate-500 italic">${escapeHtml(item.keterangan || '-')}</td>
+          <td class="px-3.5 py-3 text-center whitespace-nowrap">
+            <span class="inline-flex items-center px-2 py-0.5 rounded-md text-xs font-semibold ${badgePiketStyle}">${statusVal}</span>
+          </td>
+          <td class="px-3.5 py-3 text-xs text-slate-500 italic">${escapeHtml(item.keterangan || '-')}</td>
         `;
         tbody.appendChild(tr);
       });
+    }
+
+    // Fungsi Cetak Dokumen Resmi Rekapitulasi Presensi Sambut Pagi (A4 Format)
+    function cetakRekapLaporan() {
+      const filterDate = document.getElementById('rekap-filter-tanggal') ? document.getElementById('rekap-filter-tanggal').value : '';
+      const filterStatus = document.getElementById('rekap-filter-status') ? document.getElementById('rekap-filter-status').value : '';
+      const targetDate = filterDate || getFormattedDateToday();
+
+      let dateObj = new Date();
+      if (targetDate) {
+        const parts = targetDate.split('-');
+        if (parts.length === 3) {
+          dateObj = new Date(parseInt(parts[0], 10), parseInt(parts[1], 10) - 1, parseInt(parts[2], 10));
+        }
+      }
+      const tglFormal = getIndonesianDateString(dateObj);
+      const nowTime = getFormattedTimeNow();
+
+      // Isi Meta Kop Dokumen Cetak
+      const elMetaTgl = document.getElementById('print-meta-tanggal');
+      if (elMetaTgl) elMetaTgl.innerText = tglFormal;
+
+      const elMetaStatus = document.getElementById('print-meta-status');
+      if (elMetaStatus) elMetaStatus.innerText = filterStatus ? filterStatus : 'Semua Status (Sambut Pagi & Tidak Sambut Pagi)';
+
+      const elMetaWaktu = document.getElementById('print-meta-waktu-cetak');
+      if (elMetaWaktu) elMetaWaktu.innerText = `${tglFormal}, ${nowTime}`;
+
+      // Isi Ringkasan Angka Statistik di Lembar Cetak
+      const sTotal = document.getElementById('rekap-stat-total');
+      const sPiket = document.getElementById('rekap-stat-piket');
+      const sTidak = document.getElementById('rekap-stat-tidak-sambut');
+      const sBelum = document.getElementById('rekap-stat-belum');
+
+      const pTotal = document.getElementById('print-stat-total');
+      if (pTotal && sTotal) pTotal.innerText = sTotal.innerText;
+      const pPiket = document.getElementById('print-stat-piket');
+      if (pPiket && sPiket) pPiket.innerText = sPiket.innerText;
+      const pTidak = document.getElementById('print-stat-tidak');
+      if (pTidak && sTidak) pTidak.innerText = sTidak.innerText;
+      const pBelum = document.getElementById('print-stat-belum');
+      if (pBelum && sBelum) pBelum.innerText = sBelum.innerText;
+
+      // Isi Lembar Pengesahan
+      const elTglPengesahan = document.getElementById('print-tgl-pengesahan');
+      if (elTglPengesahan) {
+        const months = ['Januari', 'Februari', 'Maret', 'April', 'Mei', 'Juni', 'Juli', 'Agustus', 'September', 'Oktober', 'November', 'Desember'];
+        elTglPengesahan.innerText = `${dateObj.getDate()} ${months[dateObj.getMonth()]} ${dateObj.getFullYear()}`;
+      }
+
+      const elPetugas = document.getElementById('print-nama-petugas');
+      if (elPetugas) {
+        elPetugas.innerText = (currentUser && currentUser.nama) ? currentUser.nama : 'Petugas Piket Sambut Pagi';
+      }
+
+      // Pastikan tab rekap aktif saat print
+      switchTab('rekap');
+
+      // Panggil dialog cetak browser
+      setTimeout(() => {
+        window.print();
+      }, 150);
     }
 
     // Unduh Rekap Laporan ke Excel (.xlsx) menggunakan SheetJS
@@ -4619,10 +4872,11 @@
       const rows = filtered.map((item, idx) => ({
         "No": idx + 1,
         "Tanggal": item.tanggal || targetDate,
-        "Nama Pegawai": item.nama,
+        "Nama Guru & Karyawan": item.nama,
         "Jabatan / Tugas": item.jabatan || '-',
         "Jam Kehadiran": item.jam,
-        "Status": (item.piket === 'Tidak Sambut Pagi' || item.piket === 'Bukan Petugas Piket') ? 'Tidak Sambut Pagi' : 'Sambut Pagi',
+        "Ketepatan Waktu": item.status || 'Tepat Waktu (≤ 06.35)',
+        "Status Sambut Pagi": (item.piket === 'Tidak Sambut Pagi' || item.piket === 'Bukan Petugas Piket') ? 'Tidak Sambut Pagi' : 'Sambut Pagi',
         "Keterangan": item.keterangan || '-'
       }));
 
@@ -4631,10 +4885,11 @@
         ws['!cols'] = [
           { wch: 6 },
           { wch: 14 },
-          { wch: 32 },
-          { wch: 24 },
+          { wch: 34 },
+          { wch: 26 },
           { wch: 16 },
-          { wch: 22 },
+          { wch: 24 },
+          { wch: 20 },
           { wch: 30 }
         ];
         const wb = XLSX.utils.book_new();

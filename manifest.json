@@ -1,0 +1,25 @@
+{
+  "name": "Sambut Pagi Presensi - SMK Assalaam Bandung",
+  "short_name": "Sambut Pagi",
+  "description": "Sistem Presensi Guru & Tenaga Kependidikan SMK Assalaam Bandung",
+  "start_url": "./",
+  "display": "standalone",
+  "background_color": "#070d18",
+  "theme_color": "#0d1527",
+  "orientation": "portrait-primary",
+  "icons": [
+    {
+      "src": "data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><rect width='100' height='100' rx='20' fill='%2310b981'/><path d='M50 15L15 35l35 20 35-20-35-20zM15 65l35 20 35-20M15 50l35 20 35-20' fill='none' stroke='%23070d18' stroke-width='8' stroke-linecap='round' stroke-linejoin='round'/></svg>",
+      "sizes": "192x192",
+      "type": "image/svg+xml",
+      "purpose": "any maskable"
+    },
+    {
+      "src": "data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><rect width='100' height='100' rx='20' fill='%2310b981'/><path d='M50 15L15 35l35 20 35-20-35-20zM15 65l35 20 35-20M15 50l35 20 35-20' fill='none' stroke='%23070d18' stroke-width='8' stroke-linecap='round' stroke-linejoin='round'/></svg>",
+      "sizes": "512x512",
+      "type": "image/svg+xml",
+      "purpose": "any maskable"
+    }
+  ]
+}
+
