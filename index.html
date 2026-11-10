@@ -1053,12 +1053,12 @@
         </div>
 
         <!-- Stats Cards (Minimalis & Keren dengan Ikon Berwarna) -->
-        <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 mb-6">
-          <!-- Card 1: Total Pegawai -->
+        <div class="grid grid-cols-1 sm:grid-cols-3 gap-4 mb-6">
+          <!-- Card 1: Total Gukar -->
           <div
             class="bg-white border border-slate-200/80 rounded-2xl p-5 shadow-[0_2px_10px_rgba(15,23,42,0.03)] hover:shadow-md transition">
             <div class="flex items-center justify-between mb-3">
-              <span class="text-[11px] font-bold uppercase tracking-wider text-slate-400">Total Pegawai</span>
+              <span class="text-[11px] font-bold uppercase tracking-wider text-slate-400">Total Gukar</span>
               <div class="w-9 h-9 rounded-xl bg-blue-50 text-blue-600 flex items-center justify-center font-bold">
                 <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                   <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
@@ -1069,15 +1069,15 @@
             </div>
             <h3 id="stat-total-pegawai" class="text-2xl font-extrabold text-slate-900">0 Orang</h3>
             <p class="text-xs text-blue-600 mt-1.5 font-medium flex items-center gap-1">
-              <span>●</span> Terdaftar di Sistem
+              <span>●</span> Guru &amp; Tenaga Kependidikan
             </p>
           </div>
 
-          <!-- Card 2: Hadir Hari Ini -->
+          <!-- Card 2: Gukar Sambut Pagi -->
           <div
             class="bg-white border border-slate-200/80 rounded-2xl p-5 shadow-[0_2px_10px_rgba(15,23,42,0.03)] hover:shadow-md transition">
             <div class="flex items-center justify-between mb-3">
-              <span class="text-[11px] font-bold uppercase tracking-wider text-slate-400">Hadir Hari Ini</span>
+              <span class="text-[11px] font-bold uppercase tracking-wider text-slate-400">Gukar Sambut Pagi</span>
               <div class="w-9 h-9 rounded-xl bg-emerald-50 text-emerald-600 flex items-center justify-center font-bold">
                 <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                   <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
@@ -1085,65 +1085,48 @@
                 </svg>
               </div>
             </div>
-            <h3 id="stat-hadir-hari-ini" class="text-2xl font-extrabold text-emerald-600">0 Orang</h3>
+            <h3 id="stat-sambut-hari-ini" class="text-2xl font-extrabold text-emerald-600">0 Orang</h3>
             <p class="text-xs text-emerald-700 mt-1.5 font-medium flex items-center gap-1">
-              <span class="w-1.5 h-1.5 rounded-full bg-emerald-500 animate-pulse"></span> Presensi Tercatat
+              <span class="w-1.5 h-1.5 rounded-full bg-emerald-500 animate-pulse"></span> Siaga Sambut di Gerbang
             </p>
           </div>
 
-          <!-- Card 3: Piket Sambut Pagi -->
+          <!-- Card 3: Gukar Tidak Sambut Pagi -->
           <div
             class="bg-white border border-slate-200/80 rounded-2xl p-5 shadow-[0_2px_10px_rgba(15,23,42,0.03)] hover:shadow-md transition">
             <div class="flex items-center justify-between mb-3">
-              <span class="text-[11px] font-bold uppercase tracking-wider text-slate-400">Piket Sambut</span>
-              <div class="w-9 h-9 rounded-xl bg-indigo-50 text-indigo-600 flex items-center justify-center font-bold">
-                <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
-                    d="M9 12l2 2 4-4m5.618-4.016A11.955 11.955 0 0112 2.944a11.955 11.955 0 01-8.618 3.04A12.02 12.02 0 003 9c0 5.591 3.824 10.29 9 11.622 5.176-1.332 9-6.03 9-11.622 0-1.042-.133-2.052-.382-3.016z">
-                  </path>
-                </svg>
-              </div>
-            </div>
-            <h3 id="stat-piket-hari-ini" class="text-2xl font-extrabold text-indigo-600">0 Orang</h3>
-            <p class="text-xs text-indigo-600 mt-1.5 font-medium flex items-center gap-1">
-              <span>●</span> Siaga di Gerbang
-            </p>
-          </div>
-
-          <!-- Card 4: Jadwal Sambut Pagi -->
-          <div
-            class="bg-white border border-slate-200/80 rounded-2xl p-5 shadow-[0_2px_10px_rgba(15,23,42,0.03)] hover:shadow-md transition">
-            <div class="flex items-center justify-between mb-3">
-              <span class="text-[11px] font-bold uppercase tracking-wider text-slate-400">Jadwal Standar</span>
+              <span class="text-[11px] font-bold uppercase tracking-wider text-slate-400">Gukar Tidak Sambut Pagi</span>
               <div class="w-9 h-9 rounded-xl bg-amber-50 text-amber-600 flex items-center justify-center font-bold">
                 <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                   <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
-                    d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"></path>
+                    d="M12 8v4m0 4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"></path>
                 </svg>
               </div>
             </div>
-            <h3 class="text-2xl font-extrabold text-amber-500">06.00 – 06.35</h3>
-            <p class="text-xs text-slate-500 mt-1.5 font-medium">Batas Masuk: 06.40 WIB</p>
+            <h3 id="stat-tidak-sambut-hari-ini" class="text-2xl font-extrabold text-amber-600">0 Orang</h3>
+            <p class="text-xs text-amber-700 mt-1.5 font-medium flex items-center gap-1">
+              <span>●</span> Tidak Bertugas Sambut
+            </p>
           </div>
         </div>
 
-        <!-- Progres Kehadiran Hari Ini -->
+        <!-- Progres Sambut Pagi Hari Ini -->
         <div class="bg-white border border-slate-200/80 rounded-2xl p-6 shadow-[0_2px_12px_rgba(15,23,42,0.04)] mb-6">
           <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-3 mb-4">
             <div>
-              <h3 class="font-extrabold text-slate-900 text-sm">Progres Kehadiran Hari Ini</h3>
-              <p class="text-xs text-slate-500 mt-0.5" id="dashboard-progress-label">Menghitung data presensi...</p>
+              <h3 class="font-extrabold text-slate-900 text-sm">Progres Sambut Pagi Hari Ini</h3>
+              <p class="text-xs text-slate-500 mt-0.5" id="dashboard-progress-label">Menghitung data sambut pagi...</p>
             </div>
             <div class="flex items-center gap-2 flex-wrap">
               <span
                 class="inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-semibold bg-emerald-50 text-emerald-700 border border-emerald-200/80">
                 <span class="w-2 h-2 rounded-full bg-emerald-500"></span>
-                <span id="badge-tepat-waktu-count">0 Tepat Waktu</span>
+                <span id="badge-sambut-count">0 Sambut Pagi</span>
               </span>
               <span
                 class="inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-semibold bg-amber-50 text-amber-700 border border-amber-200/80">
                 <span class="w-2 h-2 rounded-full bg-amber-500"></span>
-                <span id="badge-terlambat-count">0 Terlambat</span>
+                <span id="badge-tidak-sambut-count">0 Tidak Sambut</span>
               </span>
               <span
                 class="inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-semibold bg-slate-100 text-slate-700 border border-slate-200/80">
@@ -1153,14 +1136,18 @@
               <span
                 class="inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-semibold bg-slate-100 text-slate-700 border border-slate-200/80">
                 <span class="w-2 h-2 rounded-full bg-slate-400"></span>
-                <span id="badge-belum-hadir-count">0 Belum Hadir</span>
+                <span id="badge-belum-hadir-count">0 Belum Presensi</span>
               </span>
             </div>
           </div>
-          <div class="w-full bg-slate-100 rounded-full h-3 overflow-hidden shadow-inner">
+          <!-- Bar Perbandingan Sambut Pagi (Hijau Emerald) vs Tidak Sambut (Oranye Amber) -->
+          <div class="w-full bg-slate-100 rounded-full h-3 overflow-hidden shadow-inner flex">
             <div id="dashboard-progress-bar"
-              class="bg-gradient-to-r from-emerald-500 via-teal-400 to-emerald-400 h-full rounded-full transition-all duration-500"
-              style="width: 0%;"></div>
+              class="bg-gradient-to-r from-emerald-500 to-teal-400 h-full transition-all duration-500"
+              style="width: 0%;" title="Gukar Sambut Pagi"></div>
+            <div id="dashboard-progress-tidak-sambut"
+              class="bg-gradient-to-r from-amber-400 to-amber-500 h-full transition-all duration-500"
+              style="width: 0%;" title="Gukar Tidak Sambut Pagi"></div>
           </div>
         </div>
 
@@ -1208,16 +1195,16 @@
               <div class="flex items-center justify-between mb-4 pb-3 border-b border-slate-100">
                 <div class="flex items-center gap-2">
                   <span class="w-2.5 h-2.5 rounded-full bg-slate-400"></span>
-                  <h3 class="font-bold text-slate-900 text-sm">Pegawai Belum Hadir (<span
+                  <h3 class="font-bold text-slate-900 text-sm">Gukar Belum Presensi (<span
                       id="count-belum-hadir">0</span>)</h3>
                 </div>
-                <span class="text-[11px] text-slate-400 font-medium">Belum Presensi Manual</span>
+                <span class="text-[11px] text-slate-400 font-medium">Belum Presensi Hari Ini</span>
               </div>
               <div id="dashboard-unmarked-list" class="space-y-2 max-h-[300px] overflow-y-auto pr-1">
                 <!-- Rendered via JS -->
               </div>
               <div id="dashboard-unmarked-empty" class="p-8 text-center text-slate-400 text-xs hidden">
-                🎉 Luar biasa! Seluruh pegawai telah tercatat hadir hari ini.
+                🎉 Luar biasa! Seluruh Gukar telah tercatat presensi hari ini.
               </div>
             </div>
           </div>
@@ -4709,47 +4696,52 @@
       const presensiHariIni = getPresensiHariIni();
       const totalPegawai = dataPegawai.length;
 
-      // Filter presensi yang benar-benar HADIR (Mengecualikan OFF / Tidak Ada Jadwal)
-      const hadirRecords = presensiHariIni.filter(p => !isOffStatus(p.piket));
-      const totalHadir = hadirRecords.length;
-
-      // Hitung pegawai yang OFF (Tidak Ada Jadwal / Tidak Hadir)
+      // Hitung kategori Sambut Pagi, Tidak Sambut Pagi, dan OFF
+      const sambutCount = presensiHariIni.filter(p => normalizePiketStatus(p.piket) === 'Sambut Pagi').length;
+      const tidakSambutCount = presensiHariIni.filter(p => normalizePiketStatus(p.piket) === 'Tidak Sambut Pagi').length;
       const offCount = presensiHariIni.filter(p => isOffStatus(p.piket)).length;
 
-      // 1. Top Stat Cards
+      // Pegawai yang sudah ada catatan presensinya hari ini (Sambut, Tidak Sambut, maupun OFF)
+      const totalTercatat = presensiHariIni.length;
+      const belumHadirCount = Math.max(0, totalPegawai - totalTercatat);
+
+      // 1. Top Stat Cards: Total Gukar, Gukar Sambut Pagi, Gukar Tidak Sambut Pagi
       const elTotal = document.getElementById('stat-total-pegawai');
       if (elTotal) elTotal.innerText = `${totalPegawai} Orang`;
 
-      const elHadir = document.getElementById('stat-hadir-hari-ini');
-      if (elHadir) elHadir.innerText = `${totalHadir} Orang`;
+      const elSambut = document.getElementById('stat-sambut-hari-ini') || document.getElementById('stat-piket-hari-ini');
+      if (elSambut) elSambut.innerText = `${sambutCount} Orang`;
 
-      const piketCount = presensiHariIni.filter(p => normalizePiketStatus(p.piket) === 'Sambut Pagi').length;
-      const elPiket = document.getElementById('stat-piket-hari-ini');
-      if (elPiket) elPiket.innerText = `${piketCount} Orang`;
+      const elTidakSambut = document.getElementById('stat-tidak-sambut-hari-ini') || document.getElementById('stat-hadir-hari-ini');
+      if (elTidakSambut) elTidakSambut.innerText = `${tidakSambutCount} Orang`;
 
-      // 2. Progres Kehadiran & Badges
-      const tepatCount = hadirRecords.filter(p => (p.status || '').includes('Tepat')).length;
-      const terlambatCount = Math.max(0, totalHadir - tepatCount);
-      const belumHadirCount = Math.max(0, totalPegawai - totalHadir - offCount);
-      const percentage = totalPegawai > 0 ? Math.round((totalHadir / totalPegawai) * 100) : 0;
+      // 2. Progres Sambut Pagi vs Tidak Sambut Pagi
+      const percentageSambut = totalPegawai > 0 ? Math.round((sambutCount / totalPegawai) * 100) : 0;
+      const percentageTidak = totalPegawai > 0 ? Math.round((tidakSambutCount / totalPegawai) * 100) : 0;
 
       const progressLabel = document.getElementById('dashboard-progress-label');
-      if (progressLabel) progressLabel.innerText = `${totalHadir} dari ${totalPegawai} pegawai telah hadir (${percentage}%)${offCount > 0 ? ` • ${offCount} pegawai OFF` : ''}`;
+      if (progressLabel) {
+        progressLabel.innerText = `${sambutCount} Gukar Sambut Pagi (${percentageSambut}%) • ${tidakSambutCount} Tidak Sambut Pagi (${percentageTidak}%)${offCount > 0 ? ` • ${offCount} OFF` : ''}${belumHadirCount > 0 ? ` • ${belumHadirCount} Belum Presensi` : ''}`;
+      }
 
       const progressBar = document.getElementById('dashboard-progress-bar');
-      if (progressBar) progressBar.style.width = `${percentage}%`;
+      if (progressBar) progressBar.style.width = `${percentageSambut}%`;
 
-      const bTepat = document.getElementById('badge-tepat-waktu-count');
-      if (bTepat) bTepat.innerText = `${tepatCount} Tepat Waktu`;
+      const progressTidakBar = document.getElementById('dashboard-progress-tidak-sambut');
+      if (progressTidakBar) progressTidakBar.style.width = `${percentageTidak}%`;
 
-      const bTerlambat = document.getElementById('badge-terlambat-count');
-      if (bTerlambat) bTerlambat.innerText = `${terlambatCount} Terlambat`;
+      // Badges
+      const bSambut = document.getElementById('badge-sambut-count') || document.getElementById('badge-tepat-waktu-count');
+      if (bSambut) bSambut.innerText = `${sambutCount} Sambut Pagi`;
+
+      const bTidakSambut = document.getElementById('badge-tidak-sambut-count') || document.getElementById('badge-terlambat-count');
+      if (bTidakSambut) bTidakSambut.innerText = `${tidakSambutCount} Tidak Sambut`;
 
       const bOff = document.getElementById('badge-off-count');
       if (bOff) bOff.innerText = `${offCount} OFF`;
 
       const bBelum = document.getElementById('badge-belum-hadir-count');
-      if (bBelum) bBelum.innerText = `${belumHadirCount} Belum Hadir`;
+      if (bBelum) bBelum.innerText = `${belumHadirCount} Belum Presensi`;
 
       // 3. Aktivitas Terkini (5 Presensi Terakhir)
       const recentTbody = document.getElementById('dashboard-recent-tbody');
