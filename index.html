@@ -2748,6 +2748,7 @@
 
       users[idx].password = newPass;
       saveUsersList(users);
+      kirimKeGoogleSheets('saveUser', { data: users[idx] });
 
       document.getElementById('form-ganti-password-saya').reset();
       alert('Password akun Anda berhasil diperbarui! Silakan gunakan password baru ini pada login berikutnya.');
@@ -2927,6 +2928,7 @@
           }
 
           saveUsersList(users);
+          kirimKeGoogleSheets('saveUser', { data: users[idx] });
           tutupModalUser();
           renderUserManagementTable();
           alert(`Data pengguna "${nama}" berhasil diperbarui!`);
@@ -2950,6 +2952,7 @@
 
         users.push(newUser);
         saveUsersList(users);
+        kirimKeGoogleSheets('saveUser', { data: newUser });
         tutupModalUser();
         renderUserManagementTable();
         alert(`Pengguna baru "${nama}" (${username}) berhasil ditambahkan dan dapat langsung digunakan untuk login!`);
@@ -2974,6 +2977,7 @@
       if (confirm(`Yakin ingin menghapus pengguna "${user.nama || user.username}" (@${user.username})?`)) {
         users = users.filter(u => u.id !== id);
         saveUsersList(users);
+        kirimKeGoogleSheets('deleteUser', { id: id });
         renderUserManagementTable();
         alert(`Pengguna "${user.nama || user.username}" berhasil dihapus.`);
       }
@@ -3283,9 +3287,48 @@
             dataPegawai = json.pegawai;
             localStorage.setItem(STORAGE_KEY_PEGAWAI, JSON.stringify(dataPegawai));
           }
+
+          // Sinkronisasi cerdas Riwayat Presensi: Menjaga data offline agar tidak terhapus
           if (Array.isArray(json.presensi)) {
-            dataPresensi = json.presensi;
+            const serverIds = new Set(json.presensi.map(x => String(x.id)));
+            const serverKeys = new Set(json.presensi.map(x => `${x.tanggal}_${x.pegawai_id}`));
+
+            // Ambil data lokal hari ini yang belum tersimpan di server (offline queue)
+            const todayStr = getFormattedDateToday();
+            const unsyncedLocal = dataPresensi.filter(p => {
+              const pTanggal = p.tanggal || todayStr;
+              const notOnServer = !serverIds.has(String(p.id)) && !serverKeys.has(`${pTanggal}_${p.pegawai_id}`);
+              return pTanggal === todayStr && notOnServer;
+            });
+
+            // Kirim ulang data offline ke server di latar belakang jika ada
+            if (unsyncedLocal.length > 0) {
+              unsyncedLocal.forEach(item => {
+                kirimKeGoogleSheets('simpanPresensi', { data: item });
+              });
+            }
+
+            // Gabungkan data server dengan data lokal yang belum tersinkron
+            dataPresensi = [...unsyncedLocal, ...json.presensi];
             localStorage.setItem(STORAGE_KEY_PRESENSI, JSON.stringify(dataPresensi));
+          }
+
+          // Sinkronisasi Data Pengguna Terpusat dari Google Sheets
+          if (Array.isArray(json.users) && json.users.length > 0) {
+            saveUsersList(json.users);
+            renderUserManagementTable();
+
+            // Update profil akun aktif jika ada perubahan data dari server
+            if (currentUser) {
+              const matchedUser = json.users.find(u => (u.username || '').toLowerCase() === (currentUser.username || '').toLowerCase());
+              if (matchedUser) {
+                currentUser.nama = matchedUser.nama;
+                currentUser.role = matchedUser.role;
+                currentUser.roleName = matchedUser.roleName;
+                saveAuthSession(currentUser);
+                renderProfilePengguna();
+              }
+            }
           }
 
           populateFilterJabatan();
@@ -3298,7 +3341,7 @@
           if (!silent) {
             alert(`✅ Sinkronisasi Google Sheets Berhasil!\n\n` +
               `• ${dataPegawai.length} Pegawai dari Sheet\n` +
-              `• ${dataPresensi.length} Presensi hari ini dari Sheet`);
+              `• ${dataPresensi.length} Presensi dari Sheet`);
           }
         } else {
           updateCloudStatusUI('error');
@@ -5031,12 +5074,12 @@
     }
 
     // Auto-Sync Otomatis Realtime Antar Perangkat (Laptop <-> HP)
-    // 1. Polling berkala setiap 15 detik di background saat aplikasi aktif
+    // 1. Polling berkala 60 detik di background saat aplikasi aktif (Hemat kuota kuota Google Apps Script)
     setInterval(() => {
       if (document.visibilityState === 'visible' && getScriptUrl() && currentUser) {
         sinkronkanDataSheets(true);
       }
-    }, 15000);
+    }, 60000);
 
     // 2. Sinkron instan saat aplikasi dibuka kembali (HP di-unlock / kembali ke tab browser)
     document.addEventListener('visibilitychange', () => {

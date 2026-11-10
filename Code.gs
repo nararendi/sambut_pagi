@@ -14,9 +14,11 @@
 const CONFIG = {
   SHEET_PEGAWAI: 'Data_Pegawai',
   SHEET_PRESENSI: 'Riwayat_Presensi',
+  SHEET_USERS: 'Data_Users',
   TIMEZONE: 'Asia/Jakarta',
   BATAS_SAMBUT_PAGI: '06:35', // Batas waktu tepat waktu sambut pagi
-  BATAS_MASUK_KERJA: '06:40'  // Batas toleransi masuk kerja
+  BATAS_MASUK_KERJA: '06:40', // Batas toleransi masuk kerja
+  MAX_RECENT_DAYS: 35         // Batas riwayat default agar hemat kuota eksekusi Google Apps Script
 };
 
 /**
@@ -87,9 +89,41 @@ function initialSetup() {
     sheetPresensi.setColumnWidth(10, 160); // Timestamp
   }
 
+  // 3. Setup Sheet Data_Users (Autentikasi Pengguna Terpusat)
+  let sheetUsers = ss.getSheetByName(CONFIG.SHEET_USERS);
+  if (!sheetUsers) {
+    sheetUsers = ss.insertSheet(CONFIG.SHEET_USERS);
+  }
+
+  const headersUsers = [
+    'ID', 'Username', 'Password', 'Nama Pengguna', 
+    'Role', 'Role Name', 'Waktu Dibuat'
+  ];
+
+  if (sheetUsers.getLastRow() === 0) {
+    sheetUsers.appendRow(headersUsers);
+    const headerRange = sheetUsers.getRange(1, 1, 1, headersUsers.length);
+    headerRange.setBackground('#1e293b')
+               .setFontColor('#ffffff')
+               .setFontWeight('bold')
+               .setHorizontalAlignment('center');
+    sheetUsers.setFrozenRows(1);
+    sheetUsers.setColumnWidth(1, 120); // ID
+    sheetUsers.setColumnWidth(2, 130); // Username
+    sheetUsers.setColumnWidth(3, 140); // Password
+    sheetUsers.setColumnWidth(4, 200); // Nama
+    sheetUsers.setColumnWidth(5, 110); // Role
+    sheetUsers.setColumnWidth(6, 160); // Role Name
+    sheetUsers.setColumnWidth(7, 160); // Timestamp
+
+    const nowStr = Utilities.formatDate(new Date(), CONFIG.TIMEZONE, 'yyyy-MM-dd HH:mm:ss');
+    sheetUsers.appendRow(["'usr-1", "admin", "admin123", "Administrator", "admin", "Super User (Admin)", nowStr]);
+    sheetUsers.appendRow(["'usr-2", "petugas", "petugas123", "Petugas Piket", "petugas", "Petugas Sambut Pagi", nowStr]);
+  }
+
   return {
     status: 'success',
-    message: 'Database Google Sheets Sambut Pagi berhasil diinisialisasi!'
+    message: 'Database Google Sheets Sambut Pagi (Pegawai, Presensi, Users) berhasil diinisialisasi!'
   };
 }
 
@@ -143,14 +177,24 @@ function doGet(e) {
         };
         break;
 
+      case 'getUsers':
+        result = {
+          status: 'success',
+          data: getDaftarUsers()
+        };
+        break;
+
       case 'getAll':
       default:
         const today = params.tanggal ? normalizeDateString(params.tanggal) : getFormattedDateToday();
+        const fetchAllHistory = (params.all === 'true' || params.all === '1');
         result = {
           status: 'success',
           tanggal: today,
           pegawai: getDaftarPegawai(),
-          presensi: getDaftarPresensi() // Ambil seluruh presensi agar riwayat hari ini & rekap sinkron penuh
+          // Ambil riwayat presensi default MAX_RECENT_DAYS agar performa kencang & hemat kuota Apps Script
+          presensi: getDaftarPresensi(fetchAllHistory ? null : null, fetchAllHistory ? null : CONFIG.MAX_RECENT_DAYS),
+          users: getDaftarUsers()
         };
         break;
     }
@@ -232,6 +276,21 @@ function doPost(e) {
         result = kosongkanPresensiTanggal(tgl);
         break;
 
+      // ===== DATA PENGGUNA / USERS (MULTI-DEVICE SYNC) =====
+      case 'getUsers':
+        result = { status: 'success', data: getDaftarUsers() };
+        break;
+
+      case 'saveUser':
+      case 'addUser':
+      case 'updateUser':
+        result = simpanUserBackend(payload.data || payload);
+        break;
+
+      case 'deleteUser':
+        result = hapusUserBackend(payload.id);
+        break;
+
       default:
         result = {
           status: 'error',
@@ -287,83 +346,110 @@ function getDaftarPegawai() {
 }
 
 function simpanPegawaiBaru(p) {
-  const ss = SpreadsheetApp.getActiveSpreadsheet();
-  const sheet = ss.getSheetByName(CONFIG.SHEET_PEGAWAI) || ss.insertSheet(CONFIG.SHEET_PEGAWAI);
+  const lock = LockService.getScriptLock();
+  try {
+    lock.waitLock(10000);
+  } catch (e) {}
 
-  const rawId = p.id ? String(p.id).replace(/^'/, '').trim() : String(new Date().getTime());
-  const nextNo = Math.max(1, sheet.getLastRow()); // Row 2 = No 1
-  const nowStr = Utilities.formatDate(new Date(), CONFIG.TIMEZONE, 'yyyy-MM-dd HH:mm:ss');
+  try {
+    const ss = SpreadsheetApp.getActiveSpreadsheet();
+    const sheet = ss.getSheetByName(CONFIG.SHEET_PEGAWAI) || ss.insertSheet(CONFIG.SHEET_PEGAWAI);
 
-  const newRow = [
-    "'" + rawId,
-    p.no || nextNo,
-    p.nama_lengkap || '',
-    (p.jenis_kelamin || 'L').toUpperCase(),
-    p.jabatan || 'Guru',
-    nowStr
-  ];
+    const rawId = p.id ? String(p.id).replace(/^'/, '').trim() : String(new Date().getTime());
+    const nextNo = Math.max(1, sheet.getLastRow()); // Row 2 = No 1
+    const nowStr = Utilities.formatDate(new Date(), CONFIG.TIMEZONE, 'yyyy-MM-dd HH:mm:ss');
 
-  sheet.appendRow(newRow);
+    const newRow = [
+      "'" + rawId,
+      p.no || nextNo,
+      p.nama_lengkap || '',
+      (p.jenis_kelamin || 'L').toUpperCase(),
+      p.jabatan || 'Guru',
+      nowStr
+    ];
 
-  return {
-    status: 'success',
-    message: 'Pegawai berhasil disimpan ke Google Sheets!',
-    data: { id: rawId, nama_lengkap: p.nama_lengkap }
-  };
+    sheet.appendRow(newRow);
+
+    return {
+      status: 'success',
+      message: 'Pegawai berhasil disimpan ke Google Sheets!',
+      data: { id: rawId, nama_lengkap: p.nama_lengkap }
+    };
+  } finally {
+    lock.releaseLock();
+  }
 }
 
 function perbaruiPegawai(p) {
-  const ss = SpreadsheetApp.getActiveSpreadsheet();
-  const sheet = ss.getSheetByName(CONFIG.SHEET_PEGAWAI);
-  if (!sheet) return { status: 'error', message: 'Sheet pegawai tidak ditemukan' };
+  const lock = LockService.getScriptLock();
+  try {
+    lock.waitLock(10000);
+  } catch (e) {}
 
-  const targetId = String(p.id).replace(/^'/, '').trim();
-  const lastRow = sheet.getLastRow();
-  if (lastRow <= 1) return { status: 'error', message: 'Data pegawai kosong' };
+  try {
+    const ss = SpreadsheetApp.getActiveSpreadsheet();
+    const sheet = ss.getSheetByName(CONFIG.SHEET_PEGAWAI);
+    if (!sheet) return { status: 'error', message: 'Sheet pegawai tidak ditemukan' };
 
-  const ids = sheet.getRange(2, 1, lastRow - 1, 1).getValues();
+    const targetId = String(p.id).replace(/^'/, '').trim();
+    const lastRow = sheet.getLastRow();
+    if (lastRow <= 1) return { status: 'error', message: 'Data pegawai kosong' };
 
-  for (let i = 0; i < ids.length; i++) {
-    const rowId = String(ids[i][0]).replace(/^'/, '').trim();
-    if (rowId === targetId) {
-      const rowIndex = i + 2;
-      // Update Nama Guru Karyawan, Jenis Kelamin, Jabatan Tugas (Kolom 3, 4, 5)
-      sheet.getRange(rowIndex, 3, 1, 3).setValues([[
-        p.nama_lengkap || '',
-        (p.jenis_kelamin || 'L').toUpperCase(),
-        p.jabatan || 'Guru'
-      ]]);
+    const ids = sheet.getRange(2, 1, lastRow - 1, 1).getValues();
 
-      return {
-        status: 'success',
-        message: 'Data pegawai ' + p.nama_lengkap + ' berhasil diperbarui!'
-      };
+    for (let i = 0; i < ids.length; i++) {
+      const rowId = String(ids[i][0]).replace(/^'/, '').trim();
+      if (rowId === targetId) {
+        const rowIndex = i + 2;
+        // Update Nama Guru Karyawan, Jenis Kelamin, Jabatan Tugas (Kolom 3, 4, 5)
+        sheet.getRange(rowIndex, 3, 1, 3).setValues([[
+          p.nama_lengkap || '',
+          (p.jenis_kelamin || 'L').toUpperCase(),
+          p.jabatan || 'Guru'
+        ]]);
+
+        return {
+          status: 'success',
+          message: 'Data pegawai ' + p.nama_lengkap + ' berhasil diperbarui!'
+        };
+      }
     }
-  }
 
-  return { status: 'error', message: 'Pegawai dengan ID ' + targetId + ' tidak ditemukan' };
+    return { status: 'error', message: 'Pegawai dengan ID ' + targetId + ' tidak ditemukan' };
+  } finally {
+    lock.releaseLock();
+  }
 }
 
 function hapusPegawai(id) {
-  const ss = SpreadsheetApp.getActiveSpreadsheet();
-  const sheet = ss.getSheetByName(CONFIG.SHEET_PEGAWAI);
-  if (!sheet) return { status: 'error', message: 'Sheet pegawai tidak ditemukan' };
+  const lock = LockService.getScriptLock();
+  try {
+    lock.waitLock(10000);
+  } catch (e) {}
 
-  const targetId = String(id).replace(/^'/, '').trim();
-  const lastRow = sheet.getLastRow();
-  if (lastRow <= 1) return { status: 'error', message: 'Tidak ada data pegawai' };
+  try {
+    const ss = SpreadsheetApp.getActiveSpreadsheet();
+    const sheet = ss.getSheetByName(CONFIG.SHEET_PEGAWAI);
+    if (!sheet) return { status: 'error', message: 'Sheet pegawai tidak ditemukan' };
 
-  const ids = sheet.getRange(2, 1, lastRow - 1, 1).getValues();
+    const targetId = String(id).replace(/^'/, '').trim();
+    const lastRow = sheet.getLastRow();
+    if (lastRow <= 1) return { status: 'error', message: 'Tidak ada data pegawai' };
 
-  for (let i = 0; i < ids.length; i++) {
-    const rowId = String(ids[i][0]).replace(/^'/, '').trim();
-    if (rowId === targetId) {
-      sheet.deleteRow(i + 2);
-      return { status: 'success', message: 'Pegawai berhasil dihapus' };
+    const ids = sheet.getRange(2, 1, lastRow - 1, 1).getValues();
+
+    for (let i = 0; i < ids.length; i++) {
+      const rowId = String(ids[i][0]).replace(/^'/, '').trim();
+      if (rowId === targetId) {
+        sheet.deleteRow(i + 2);
+        return { status: 'success', message: 'Pegawai berhasil dihapus' };
+      }
     }
-  }
 
-  return { status: 'error', message: 'Pegawai tidak ditemukan' };
+    return { status: 'error', message: 'Pegawai tidak ditemukan' };
+  } finally {
+    lock.releaseLock();
+  }
 }
 
 function batchImportPegawai(list) {
@@ -371,55 +457,73 @@ function batchImportPegawai(list) {
     return { status: 'error', message: 'Daftar impor kosong' };
   }
 
-  const ss = SpreadsheetApp.getActiveSpreadsheet();
-  const sheet = ss.getSheetByName(CONFIG.SHEET_PEGAWAI) || ss.insertSheet(CONFIG.SHEET_PEGAWAI);
-  const nowStr = Utilities.formatDate(new Date(), CONFIG.TIMEZONE, 'yyyy-MM-dd HH:mm:ss');
+  const lock = LockService.getScriptLock();
+  try {
+    lock.waitLock(15000);
+  } catch (e) {}
 
-  const startNo = Math.max(1, sheet.getLastRow());
-  const rowsToInsert = [];
+  try {
+    const ss = SpreadsheetApp.getActiveSpreadsheet();
+    const sheet = ss.getSheetByName(CONFIG.SHEET_PEGAWAI) || ss.insertSheet(CONFIG.SHEET_PEGAWAI);
+    const nowStr = Utilities.formatDate(new Date(), CONFIG.TIMEZONE, 'yyyy-MM-dd HH:mm:ss');
 
-  for (let i = 0; i < list.length; i++) {
-    const item = list[i];
-    const id = item.id ? String(item.id).replace(/^'/, '').trim() : String(new Date().getTime() + i);
-    rowsToInsert.push([
-      "'" + id,
-      item.no || (startNo + i),
-      item.nama_lengkap || '',
-      (item.jenis_kelamin || 'L').toUpperCase(),
-      item.jabatan || 'Guru',
-      nowStr
-    ]);
+    const startNo = Math.max(1, sheet.getLastRow());
+    const rowsToInsert = [];
+
+    for (let i = 0; i < list.length; i++) {
+      const item = list[i];
+      const id = item.id ? String(item.id).replace(/^'/, '').trim() : String(new Date().getTime() + i);
+      rowsToInsert.push([
+        "'" + id,
+        item.no || (startNo + i),
+        item.nama_lengkap || '',
+        (item.jenis_kelamin || 'L').toUpperCase(),
+        item.jabatan || 'Guru',
+        nowStr
+      ]);
+    }
+
+    if (rowsToInsert.length > 0) {
+      const startRow = sheet.getLastRow() + 1;
+      sheet.getRange(startRow, 1, rowsToInsert.length, 6).setValues(rowsToInsert);
+    }
+
+    return {
+      status: 'success',
+      message: 'Berhasil mengimpor ' + rowsToInsert.length + ' data pegawai ke Google Sheets!'
+    };
+  } finally {
+    lock.releaseLock();
   }
-
-  if (rowsToInsert.length > 0) {
-    const startRow = sheet.getLastRow() + 1;
-    sheet.getRange(startRow, 1, rowsToInsert.length, 6).setValues(rowsToInsert);
-  }
-
-  return {
-    status: 'success',
-    message: 'Berhasil mengimpor ' + rowsToInsert.length + ' data pegawai ke Google Sheets!'
-  };
 }
 
 function kosongkanSheetPegawai() {
-  const ss = SpreadsheetApp.getActiveSpreadsheet();
-  const sheet = ss.getSheetByName(CONFIG.SHEET_PEGAWAI);
-  if (!sheet) return { status: 'error', message: 'Sheet pegawai tidak ditemukan' };
+  const lock = LockService.getScriptLock();
+  try {
+    lock.waitLock(10000);
+  } catch (e) {}
 
-  const lastRow = sheet.getLastRow();
-  if (lastRow > 1) {
-    sheet.deleteRows(2, lastRow - 1);
+  try {
+    const ss = SpreadsheetApp.getActiveSpreadsheet();
+    const sheet = ss.getSheetByName(CONFIG.SHEET_PEGAWAI);
+    if (!sheet) return { status: 'error', message: 'Sheet pegawai tidak ditemukan' };
+
+    const lastRow = sheet.getLastRow();
+    if (lastRow > 1) {
+      sheet.deleteRows(2, lastRow - 1);
+    }
+
+    return { status: 'success', message: 'Seluruh data pegawai berhasil dikosongkan' };
+  } finally {
+    lock.releaseLock();
   }
-
-  return { status: 'success', message: 'Seluruh data pegawai berhasil dikosongkan' };
 }
 
 // ==============================================================================
 // 6. LOGIKA OPERASI RIWAYAT PRESENSI
 // ==============================================================================
 
-function getDaftarPresensi(targetTanggal) {
+function getDaftarPresensi(targetTanggal, limitDays) {
   const ss = SpreadsheetApp.getActiveSpreadsheet();
   let sheet = ss.getSheetByName(CONFIG.SHEET_PRESENSI);
   if (!sheet) {
@@ -435,6 +539,14 @@ function getDaftarPresensi(targetTanggal) {
   const presensiList = [];
   const normalizedTarget = targetTanggal ? normalizeDateString(targetTanggal) : null;
 
+  // Batas tanggal jika limitDays ditentukan
+  let minDateLimit = null;
+  if (!normalizedTarget && limitDays && typeof limitDays === 'number') {
+    const d = new Date();
+    d.setDate(d.getDate() - limitDays);
+    minDateLimit = Utilities.formatDate(d, CONFIG.TIMEZONE, 'yyyy-MM-dd');
+  }
+
   for (let i = 0; i < values.length; i++) {
     const row = values[i];
     // Abaikan baris jika ID dan Nama kosong
@@ -443,36 +555,37 @@ function getDaftarPresensi(targetTanggal) {
     // Normalisasi tanggal agar kompatibel format YYYY-MM-DD
     const rowTanggal = normalizeDateString(row[1]);
 
-    if (!normalizedTarget || rowTanggal === normalizedTarget) {
-      let jamKehadiran = row[5];
-      if (jamKehadiran instanceof Date) {
-        jamKehadiran = Utilities.formatDate(jamKehadiran, CONFIG.TIMEZONE, 'HH.mm.ss') + ' WIB';
-      } else {
-        jamKehadiran = String(jamKehadiran || '');
-      }
+    if (normalizedTarget && rowTanggal !== normalizedTarget) continue;
+    if (minDateLimit && rowTanggal && rowTanggal < minDateLimit) continue;
 
-      // Standarisasi Status: 'Sambut Pagi' atau 'Tidak Sambut Pagi'
-      const rawStatusPiket = String(row[7] || '').trim();
-      let cleanStatusPiket = 'Sambut Pagi';
-      if (rawStatusPiket.toLowerCase().includes('tidak') || rawStatusPiket.toLowerCase().includes('bukan')) {
-        cleanStatusPiket = 'Tidak Sambut Pagi';
-      } else {
-        cleanStatusPiket = 'Sambut Pagi';
-      }
-
-      presensiList.push({
-        id: String(row[0]).replace(/^'/, '').trim(),
-        tanggal: rowTanggal,
-        pegawai_id: String(row[2]).replace(/^'/, '').trim(),
-        nama: String(row[3] || '').trim(),
-        jabatan: String(row[4] || '').trim(),
-        jam: jamKehadiran,
-        status: String(row[6] || '').trim(),
-        piket: cleanStatusPiket,
-        keterangan: String(row[8] || '').trim(),
-        timestamp: String(row[9] || '').trim()
-      });
+    let jamKehadiran = row[5];
+    if (jamKehadiran instanceof Date) {
+      jamKehadiran = Utilities.formatDate(jamKehadiran, CONFIG.TIMEZONE, 'HH.mm.ss') + ' WIB';
+    } else {
+      jamKehadiran = String(jamKehadiran || '');
     }
+
+    // Standarisasi Status: 'Sambut Pagi' atau 'Tidak Sambut Pagi'
+    const rawStatusPiket = String(row[7] || '').trim();
+    let cleanStatusPiket = 'Sambut Pagi';
+    if (rawStatusPiket.toLowerCase().includes('tidak') || rawStatusPiket.toLowerCase().includes('bukan')) {
+      cleanStatusPiket = 'Tidak Sambut Pagi';
+    } else {
+      cleanStatusPiket = 'Sambut Pagi';
+    }
+
+    presensiList.push({
+      id: String(row[0]).replace(/^'/, '').trim(),
+      tanggal: rowTanggal,
+      pegawai_id: String(row[2]).replace(/^'/, '').trim(),
+      nama: String(row[3] || '').trim(),
+      jabatan: String(row[4] || '').trim(),
+      jam: jamKehadiran,
+      status: String(row[6] || '').trim(),
+      piket: cleanStatusPiket,
+      keterangan: String(row[8] || '').trim(),
+      timestamp: String(row[9] || '').trim()
+    });
   }
 
   // Urutkan presensi: Hadir paling AWAL berada di posisi ATAS (kronologis jam naik)
@@ -487,196 +600,235 @@ function getDaftarPresensi(targetTanggal) {
 }
 
 function rekamPresensiPegawai(data) {
-  const ss = SpreadsheetApp.getActiveSpreadsheet();
-  let sheet = ss.getSheetByName(CONFIG.SHEET_PRESENSI);
-  if (!sheet) {
-    sheet = ss.insertSheet(CONFIG.SHEET_PRESENSI);
+  const lock = LockService.getScriptLock();
+  try {
+    lock.waitLock(15000); // Cegah tabrakan data serentak (Race condition)
+  } catch (e) {
+    return {
+      status: 'error',
+      message: 'Server sedang sibuk memproses presensi lain, silakan tunggu beberapa saat.'
+    };
   }
 
-  // Pastikan baris judul (header) selalu ada
-  if (sheet.getLastRow() === 0) {
-    const headersPresensi = [
-      'ID Presensi', 'Tanggal', 'ID Pegawai', 'Nama Pegawai', 
-      'Jabatan', 'Jam Kehadiran', 'Status Ketepatan', 'Status', 
-      'Keterangan', 'Timestamp Sistem'
-    ];
-    sheet.appendRow(headersPresensi);
-    const headerRange = sheet.getRange(1, 1, 1, headersPresensi.length);
-    headerRange.setBackground('#10b981')
-               .setFontColor('#ffffff')
-               .setFontWeight('bold')
-               .setHorizontalAlignment('center');
-    sheet.setFrozenRows(1);
-  }
+  try {
+    const ss = SpreadsheetApp.getActiveSpreadsheet();
+    let sheet = ss.getSheetByName(CONFIG.SHEET_PRESENSI);
+    if (!sheet) {
+      sheet = ss.insertSheet(CONFIG.SHEET_PRESENSI);
+    }
 
-  const tanggal = normalizeDateString(data.tanggal) || getFormattedDateToday();
-  const pegawaiId = String(data.pegawai_id || '').replace(/^'/, '').trim();
-  const now = new Date();
-  const jamKehadiran = data.jam || (Utilities.formatDate(now, CONFIG.TIMEZONE, 'HH.mm.ss') + ' WIB');
-  const timestamp = Utilities.formatDate(now, CONFIG.TIMEZONE, 'yyyy-MM-dd HH:mm:ss');
+    // Pastikan baris judul (header) selalu ada
+    if (sheet.getLastRow() === 0) {
+      const headersPresensi = [
+        'ID Presensi', 'Tanggal', 'ID Pegawai', 'Nama Pegawai', 
+        'Jabatan', 'Jam Kehadiran', 'Status Ketepatan', 'Status', 
+        'Keterangan', 'Timestamp Sistem'
+      ];
+      sheet.appendRow(headersPresensi);
+      const headerRange = sheet.getRange(1, 1, 1, headersPresensi.length);
+      headerRange.setBackground('#10b981')
+                 .setFontColor('#ffffff')
+                 .setFontWeight('bold')
+                 .setHorizontalAlignment('center');
+      sheet.setFrozenRows(1);
+    }
 
-  // Bersihkan nilai status: 'Sambut Pagi' atau 'Tidak Sambut Pagi'
-  const rawPiket = String(data.piket || '').trim();
-  let statusPiket = 'Sambut Pagi';
-  if (rawPiket.toLowerCase().includes('tidak') || rawPiket.toLowerCase().includes('bukan')) {
-    statusPiket = 'Tidak Sambut Pagi';
-  } else {
-    statusPiket = 'Sambut Pagi';
-  }
+    const tanggal = normalizeDateString(data.tanggal) || getFormattedDateToday();
+    const pegawaiId = String(data.pegawai_id || '').replace(/^'/, '').trim();
+    const now = new Date();
+    const jamKehadiran = data.jam || (Utilities.formatDate(now, CONFIG.TIMEZONE, 'HH.mm.ss') + ' WIB');
+    const timestamp = Utilities.formatDate(now, CONFIG.TIMEZONE, 'yyyy-MM-dd HH:mm:ss');
 
-  let status = data.status;
-  if (!status) {
-    const hhmm = Utilities.formatDate(now, CONFIG.TIMEZONE, 'HH:mm');
-    if (hhmm <= CONFIG.BATAS_SAMBUT_PAGI) {
-      status = 'Tepat Waktu (≤ 06.35)';
-    } else if (hhmm <= CONFIG.BATAS_MASUK_KERJA) {
-      status = 'Terlambat Sambut Pagi';
+    // Bersihkan nilai status: 'Sambut Pagi' atau 'Tidak Sambut Pagi'
+    const rawPiket = String(data.piket || '').trim();
+    let statusPiket = 'Sambut Pagi';
+    if (rawPiket.toLowerCase().includes('tidak') || rawPiket.toLowerCase().includes('bukan')) {
+      statusPiket = 'Tidak Sambut Pagi';
     } else {
-      status = 'Terlambat (> 06.35)';
+      statusPiket = 'Sambut Pagi';
     }
-  }
 
-  const lastRow = sheet.getLastRow();
-  let existingRow = -1;
-
-  if (lastRow > 1) {
-    const rows = sheet.getRange(2, 1, lastRow - 1, 3).getValues();
-    const cleanTargetDataId = data.id ? String(data.id).replace(/^'/, '').trim() : '';
-
-    for (let i = 0; i < rows.length; i++) {
-      const rPresensiId = String(rows[i][0]).replace(/^'/, '').trim();
-      const rTanggal = normalizeDateString(rows[i][1]);
-      const rPegawaiId = String(rows[i][2]).replace(/^'/, '').trim();
-
-      if ((cleanTargetDataId && rPresensiId === cleanTargetDataId) || (rTanggal === tanggal && rPegawaiId === pegawaiId)) {
-        existingRow = i + 2;
-        break;
+    let status = data.status;
+    if (!status) {
+      const hhmm = Utilities.formatDate(now, CONFIG.TIMEZONE, 'HH:mm');
+      if (hhmm <= CONFIG.BATAS_SAMBUT_PAGI) {
+        status = 'Tepat Waktu (≤ 06.35)';
+      } else if (hhmm <= CONFIG.BATAS_MASUK_KERJA) {
+        status = 'Terlambat Sambut Pagi';
+      } else {
+        status = 'Terlambat (> 06.35)';
       }
     }
-  }
 
-  if (existingRow !== -1) {
-    sheet.getRange(existingRow, 6, 1, 5).setValues([[
-      jamKehadiran,
-      status,
-      statusPiket,
-      data.keterangan || '',
-      timestamp
-    ]]);
+    const lastRow = sheet.getLastRow();
+    let existingRow = -1;
 
-    return {
-      status: 'success',
-      action: 'updated',
-      message: 'Jam kehadiran ' + data.nama + ' berhasil diperbarui ke ' + jamKehadiran,
-      data: {
-        id: String(data.id || '').replace(/^'/, '').trim(),
-        tanggal: tanggal,
-        pegawai_id: pegawaiId,
-        nama: data.nama,
-        jam: jamKehadiran,
-        status: status,
-        piket: statusPiket
+    if (lastRow > 1) {
+      const rows = sheet.getRange(2, 1, lastRow - 1, 3).getValues();
+      const cleanTargetDataId = data.id ? String(data.id).replace(/^'/, '').trim() : '';
+
+      for (let i = 0; i < rows.length; i++) {
+        const rPresensiId = String(rows[i][0]).replace(/^'/, '').trim();
+        const rTanggal = normalizeDateString(rows[i][1]);
+        const rPegawaiId = String(rows[i][2]).replace(/^'/, '').trim();
+
+        if ((cleanTargetDataId && rPresensiId === cleanTargetDataId) || (rTanggal === tanggal && rPegawaiId === pegawaiId)) {
+          existingRow = i + 2;
+          break;
+        }
       }
-    };
-  } else {
-    const presensiId = data.id ? String(data.id).replace(/^'/, '').trim() : String(now.getTime());
-    const newRow = [
-      "'" + presensiId,
-      "'" + tanggal,
-      "'" + pegawaiId,
-      data.nama || '',
-      data.jabatan || '',
-      jamKehadiran,
-      status,
-      statusPiket,
-      data.keterangan || '',
-      timestamp
-    ];
+    }
 
-    sheet.appendRow(newRow);
+    if (existingRow !== -1) {
+      sheet.getRange(existingRow, 6, 1, 5).setValues([[
+        jamKehadiran,
+        status,
+        statusPiket,
+        data.keterangan || '',
+        timestamp
+      ]]);
 
-    return {
-      status: 'success',
-      action: 'inserted',
-      message: 'Presensi ' + data.nama + ' berhasil dicatat!',
-      data: {
-        id: presensiId,
-        tanggal: tanggal,
-        pegawai_id: pegawaiId,
-        nama: data.nama,
-        jam: jamKehadiran,
-        status: status,
-        piket: statusPiket
-      }
-    };
+      return {
+        status: 'success',
+        action: 'updated',
+        message: 'Jam kehadiran ' + data.nama + ' berhasil diperbarui ke ' + jamKehadiran,
+        data: {
+          id: String(data.id || '').replace(/^'/, '').trim(),
+          tanggal: tanggal,
+          pegawai_id: pegawaiId,
+          nama: data.nama,
+          jam: jamKehadiran,
+          status: status,
+          piket: statusPiket
+        }
+      };
+    } else {
+      const presensiId = data.id ? String(data.id).replace(/^'/, '').trim() : String(now.getTime());
+      const newRow = [
+        "'" + presensiId,
+        "'" + tanggal,
+        "'" + pegawaiId,
+        data.nama || '',
+        data.jabatan || '',
+        jamKehadiran,
+        status,
+        statusPiket,
+        data.keterangan || '',
+        timestamp
+      ];
+
+      sheet.appendRow(newRow);
+
+      return {
+        status: 'success',
+        action: 'inserted',
+        message: 'Presensi ' + data.nama + ' berhasil dicatat!',
+        data: {
+          id: presensiId,
+          tanggal: tanggal,
+          pegawai_id: pegawaiId,
+          nama: data.nama,
+          jam: jamKehadiran,
+          status: status,
+          piket: statusPiket
+        }
+      };
+    }
+  } finally {
+    lock.releaseLock();
   }
 }
 
 function hapusPresensi(id, tanggal, nama, pegawaiId) {
-  const ss = SpreadsheetApp.getActiveSpreadsheet();
-  const sheet = ss.getSheetByName(CONFIG.SHEET_PRESENSI);
-  if (!sheet) return { status: 'error', message: 'Sheet presensi tidak ditemukan' };
+  const lock = LockService.getScriptLock();
+  try {
+    lock.waitLock(10000);
+  } catch (e) {}
 
-  const targetId = id ? String(id).replace(/^'/, '').trim() : '';
-  const normTanggal = tanggal ? normalizeDateString(tanggal) : '';
-  const targetNama = nama ? String(nama).trim().toLowerCase() : '';
-  const targetPegawaiId = pegawaiId ? String(pegawaiId).replace(/^'/, '').trim() : '';
+  try {
+    const ss = SpreadsheetApp.getActiveSpreadsheet();
+    const sheet = ss.getSheetByName(CONFIG.SHEET_PRESENSI);
+    if (!sheet) return { status: 'error', message: 'Sheet presensi tidak ditemukan' };
 
-  const lastRow = sheet.getLastRow();
-  if (lastRow <= 1) return { status: 'error', message: 'Data presensi kosong' };
+    const targetId = id ? String(id).replace(/^'/, '').trim() : '';
+    const normTanggal = tanggal ? normalizeDateString(tanggal) : '';
+    const targetNama = nama ? String(nama).trim().toLowerCase() : '';
+    const targetPegawaiId = pegawaiId ? String(pegawaiId).replace(/^'/, '').trim() : '';
 
-  // Ambil kolom ID (1), Tanggal (2), ID Pegawai (3), Nama Pegawai (4)
-  const values = sheet.getRange(2, 1, lastRow - 1, 4).getValues();
+    const lastRow = sheet.getLastRow();
+    if (lastRow <= 1) return { status: 'error', message: 'Data presensi kosong' };
 
-  for (let i = 0; i < values.length; i++) {
-    const rowId = String(values[i][0]).replace(/^'/, '').trim();
-    const rowTanggal = normalizeDateString(values[i][1]);
-    const rowPegawaiId = String(values[i][2]).replace(/^'/, '').trim();
-    const rowNama = String(values[i][3]).trim().toLowerCase();
+    // Ambil kolom ID (1), Tanggal (2), ID Pegawai (3), Nama Pegawai (4)
+    const values = sheet.getRange(2, 1, lastRow - 1, 4).getValues();
+    let deletedCount = 0;
 
-    // 1. Cocokkan ID presensi secara eksak
-    const matchId = targetId && (rowId === targetId);
+    // Loop mundur dari bawah ke atas agar penghapusan baris tidak merusak indeks baris berikutnya
+    // Ini juga menjamin jika ada DUPLIKAT presensi, semuanya bersih terhapus
+    for (let i = values.length - 1; i >= 0; i--) {
+      const rowId = String(values[i][0]).replace(/^'/, '').trim();
+      const rowTanggal = normalizeDateString(values[i][1]);
+      const rowPegawaiId = String(values[i][2]).replace(/^'/, '').trim();
+      const rowNama = String(values[i][3]).trim().toLowerCase();
 
-    // 2. Cocokkan tanggal + pegawai_id atau nama (fallback yang kuat jika ID berbeda format)
-    const matchFallback = normTanggal && (rowTanggal === normTanggal) &&
-      ((targetPegawaiId && rowPegawaiId === targetPegawaiId) || (targetNama && rowNama === targetNama));
+      // 1. Cocokkan ID presensi secara eksak
+      const matchId = targetId && (rowId === targetId);
 
-    if (matchId || matchFallback) {
-      sheet.deleteRow(i + 2);
+      // 2. Cocokkan tanggal + pegawai_id atau nama (fallback yang kuat jika ID berbeda format)
+      const matchFallback = normTanggal && (rowTanggal === normTanggal) &&
+        ((targetPegawaiId && rowPegawaiId === targetPegawaiId) || (targetNama && rowNama === targetNama));
+
+      if (matchId || matchFallback) {
+        sheet.deleteRow(i + 2);
+        deletedCount++;
+      }
+    }
+
+    if (deletedCount > 0) {
       return { 
         status: 'success', 
-        message: 'Riwayat presensi berhasil dihapus dari Google Sheets' 
+        message: 'Berhasil menghapus ' + deletedCount + ' baris presensi dari Google Sheets' 
       };
     }
-  }
 
-  return { status: 'error', message: 'Data presensi tidak ditemukan di Google Sheets' };
+    return { status: 'error', message: 'Data presensi tidak ditemukan di Google Sheets' };
+  } finally {
+    lock.releaseLock();
+  }
 }
 
 function kosongkanPresensiTanggal(targetTanggal) {
-  const ss = SpreadsheetApp.getActiveSpreadsheet();
-  const sheet = ss.getSheetByName(CONFIG.SHEET_PRESENSI);
-  if (!sheet) return { status: 'error', message: 'Sheet presensi tidak ditemukan' };
+  const lock = LockService.getScriptLock();
+  try {
+    lock.waitLock(10000);
+  } catch (e) {}
 
-  const normTarget = normalizeDateString(targetTanggal);
-  const lastRow = sheet.getLastRow();
-  if (lastRow <= 1) return { status: 'success', message: 'Riwayat presensi sudah kosong' };
+  try {
+    const ss = SpreadsheetApp.getActiveSpreadsheet();
+    const sheet = ss.getSheetByName(CONFIG.SHEET_PRESENSI);
+    if (!sheet) return { status: 'error', message: 'Sheet presensi tidak ditemukan' };
 
-  const values = sheet.getRange(2, 2, lastRow - 1, 1).getValues();
-  let deletedCount = 0;
+    const normTarget = normalizeDateString(targetTanggal);
+    const lastRow = sheet.getLastRow();
+    if (lastRow <= 1) return { status: 'success', message: 'Riwayat presensi sudah kosong' };
 
-  for (let i = values.length - 1; i >= 0; i--) {
-    const rTanggal = normalizeDateString(values[i][0]);
-    if (rTanggal === normTarget) {
-      sheet.deleteRow(i + 2);
-      deletedCount++;
+    const values = sheet.getRange(2, 2, lastRow - 1, 1).getValues();
+    let deletedCount = 0;
+
+    for (let i = values.length - 1; i >= 0; i--) {
+      const rTanggal = normalizeDateString(values[i][0]);
+      if (rTanggal === normTarget) {
+        sheet.deleteRow(i + 2);
+        deletedCount++;
+      }
     }
-  }
 
-  return {
-    status: 'success',
-    message: 'Berhasil mengosongkan ' + deletedCount + ' riwayat presensi tanggal ' + normTarget
-  };
+    return {
+      status: 'success',
+      message: 'Berhasil mengosongkan ' + deletedCount + ' riwayat presensi tanggal ' + normTarget
+    };
+  } finally {
+    lock.releaseLock();
+  }
 }
 
 // ==============================================================================
@@ -740,4 +892,159 @@ function parseJamStringToSeconds(jamStr) {
   var m = parseInt(match[2], 10) || 0;
   var s = parseInt(match[3] || '0', 10) || 0;
   return h * 3600 + m * 60 + s;
+}
+
+// ==============================================================================
+// 8. LOGIKA OPERASI DATA PENGGUNA / USERS (Terpusat di Google Sheets)
+// ==============================================================================
+
+function getDaftarUsers() {
+  const ss = SpreadsheetApp.getActiveSpreadsheet();
+  let sheet = ss.getSheetByName(CONFIG.SHEET_USERS);
+  if (!sheet) {
+    initialSetup();
+    sheet = ss.getSheetByName(CONFIG.SHEET_USERS);
+  }
+  if (!sheet) {
+    return [
+      { id: 'usr-1', username: 'admin', password: 'admin123', nama: 'Administrator', role: 'admin', roleName: 'Super User (Admin)' },
+      { id: 'usr-2', username: 'petugas', password: 'petugas123', nama: 'Petugas Piket', role: 'petugas', roleName: 'Petugas Sambut Pagi' }
+    ];
+  }
+
+  const lastRow = sheet.getLastRow();
+  if (lastRow <= 1) return [];
+
+  const values = sheet.getRange(2, 1, lastRow - 1, 6).getValues();
+  const usersList = [];
+
+  for (let i = 0; i < values.length; i++) {
+    const row = values[i];
+    if (row[1] && row[2]) { // Ada username & password
+      usersList.push({
+        id: String(row[0]).replace(/^'/, '').trim() || ('usr-' + (i + 1)),
+        username: String(row[1]).trim().toLowerCase(),
+        password: String(row[2]).trim(),
+        nama: String(row[3] || row[1]).trim(),
+        role: String(row[4] || 'petugas').trim().toLowerCase(),
+        roleName: String(row[5] || (row[4] === 'admin' ? 'Super User (Admin)' : 'Petugas Sambut Pagi')).trim()
+      });
+    }
+  }
+
+  return usersList;
+}
+
+function simpanUserBackend(u) {
+  const lock = LockService.getScriptLock();
+  try {
+    lock.waitLock(10000);
+  } catch (e) {}
+
+  try {
+    const ss = SpreadsheetApp.getActiveSpreadsheet();
+    let sheet = ss.getSheetByName(CONFIG.SHEET_USERS);
+    if (!sheet) {
+      initialSetup();
+      sheet = ss.getSheetByName(CONFIG.SHEET_USERS);
+    }
+
+    const userId = u.id ? String(u.id).replace(/^'/, '').trim() : ('usr-' + new Date().getTime());
+    const username = String(u.username || '').trim().toLowerCase();
+    const password = String(u.password || '').trim();
+    const nama = String(u.nama || username).trim();
+    const role = String(u.role || 'petugas').trim().toLowerCase();
+    const roleName = String(u.roleName || (role === 'admin' ? 'Super User (Admin)' : 'Petugas Sambut Pagi')).trim();
+    const nowStr = Utilities.formatDate(new Date(), CONFIG.TIMEZONE, 'yyyy-MM-dd HH:mm:ss');
+
+    if (!username || !password) {
+      return { status: 'error', message: 'Username dan password wajib diisi!' };
+    }
+
+    const lastRow = sheet.getLastRow();
+    let existingRow = -1;
+
+    if (lastRow > 1) {
+      const rows = sheet.getRange(2, 1, lastRow - 1, 2).getValues();
+      for (let i = 0; i < rows.length; i++) {
+        const rId = String(rows[i][0]).replace(/^'/, '').trim();
+        const rUsername = String(rows[i][1]).trim().toLowerCase();
+        if (rId === userId || rUsername === username) {
+          existingRow = i + 2;
+          break;
+        }
+      }
+    }
+
+    if (existingRow !== -1) {
+      // Update
+      sheet.getRange(existingRow, 2, 1, 5).setValues([[
+        username,
+        password,
+        nama,
+        role,
+        roleName
+      ]]);
+      return {
+        status: 'success',
+        action: 'updated',
+        message: 'Pengguna ' + nama + ' berhasil diperbarui di Google Sheets!'
+      };
+    } else {
+      // Insert baru
+      sheet.appendRow([
+        "'" + userId,
+        username,
+        password,
+        nama,
+        role,
+        roleName,
+        nowStr
+      ]);
+      return {
+        status: 'success',
+        action: 'inserted',
+        message: 'Pengguna baru ' + nama + ' berhasil disimpan di Google Sheets!'
+      };
+    }
+  } finally {
+    lock.releaseLock();
+  }
+}
+
+function hapusUserBackend(id) {
+  const lock = LockService.getScriptLock();
+  try {
+    lock.waitLock(10000);
+  } catch (e) {}
+
+  try {
+    const ss = SpreadsheetApp.getActiveSpreadsheet();
+    const sheet = ss.getSheetByName(CONFIG.SHEET_USERS);
+    if (!sheet) return { status: 'error', message: 'Sheet pengguna tidak ditemukan' };
+
+    const targetId = String(id || '').replace(/^'/, '').trim();
+    const lastRow = sheet.getLastRow();
+    if (lastRow <= 1) return { status: 'error', message: 'Tidak ada data pengguna' };
+
+    const ids = sheet.getRange(2, 1, lastRow - 1, 2).getValues();
+    for (let i = ids.length - 1; i >= 0; i--) {
+      const rId = String(ids[i][0]).replace(/^'/, '').trim();
+      const rUsername = String(ids[i][1]).trim().toLowerCase();
+
+      // Lindungi admin utama agar tidak bisa dihapus
+      if (rUsername === 'admin' && (targetId === rId || targetId === 'admin')) {
+        return { status: 'error', message: 'Akun Administrator utama tidak boleh dihapus.' };
+      }
+
+      if (rId === targetId || rUsername === targetId.toLowerCase()) {
+        sheet.deleteRow(i + 2);
+        return { status: 'success', message: 'Pengguna berhasil dihapus dari Google Sheets' };
+      }
+    }
+
+    return { status: 'error', message: 'Pengguna tidak ditemukan' };
+  } finally {
+    lock.releaseLock();
+  }
 }
