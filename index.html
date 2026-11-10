@@ -1149,6 +1149,11 @@
               </span>
               <span
                 class="inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-semibold bg-slate-100 text-slate-700 border border-slate-200/80">
+                <span class="w-2 h-2 rounded-full bg-slate-500"></span>
+                <span id="badge-off-count">0 OFF</span>
+              </span>
+              <span
+                class="inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-semibold bg-slate-100 text-slate-700 border border-slate-200/80">
                 <span class="w-2 h-2 rounded-full bg-slate-400"></span>
                 <span id="badge-belum-hadir-count">0 Belum Hadir</span>
               </span>
@@ -1359,13 +1364,14 @@
                   menu Data Guru & Karyawan.</p>
               </div>
 
-              <!-- Status (Sambut Pagi / Tidak Sambut Pagi) -->
+              <!-- Status (Sambut Pagi / Tidak Sambut Pagi / OFF) -->
               <div>
                 <label class="block text-xs font-bold text-slate-700 uppercase tracking-wider mb-1.5">Status</label>
                 <select id="presensi-piket-select"
                   class="w-full px-3.5 py-2.5 bg-slate-50 border border-slate-200 hover:border-slate-300 focus:bg-white focus:border-emerald-500 focus:ring-4 focus:ring-emerald-500/10 rounded-xl transition-all text-slate-800 text-sm font-medium">
                   <option value="Sambut Pagi" selected>Sambut Pagi</option>
                   <option value="Tidak Sambut Pagi">Tidak Sambut Pagi</option>
+                  <option value="OFF (Tidak Ada Jadwal)">OFF (Tidak Ada Jadwal)</option>
                 </select>
               </div>
 
@@ -1510,10 +1516,11 @@
           </div>
 
           <!-- Ringkasan Statistik Cetak -->
-          <div class="grid grid-cols-4 gap-2 text-center text-[10px] py-1 bg-slate-100 border border-slate-300 rounded font-semibold text-slate-800 mb-2">
+          <div class="grid grid-cols-5 gap-2 text-center text-[10px] py-1 bg-slate-100 border border-slate-300 rounded font-semibold text-slate-800 mb-2">
             <div>Total Hadir: <span id="print-stat-total" class="font-bold text-slate-950">0</span></div>
             <div>Sambut Pagi: <span id="print-stat-piket" class="font-bold text-emerald-800">0</span></div>
             <div>Tidak Sambut: <span id="print-stat-tidak" class="font-bold text-slate-700">0</span></div>
+            <div>OFF / Libur: <span id="print-stat-off" class="font-bold text-slate-800">0</span></div>
             <div>Belum Hadir: <span id="print-stat-belum" class="font-bold text-amber-800">0</span></div>
           </div>
         </div>
@@ -1578,6 +1585,7 @@
                 <option value="">Semua Status</option>
                 <option value="Sambut Pagi">Sambut Pagi</option>
                 <option value="Tidak Sambut Pagi">Tidak Sambut Pagi</option>
+                <option value="OFF (Tidak Ada Jadwal)">OFF (Tidak Ada Jadwal)</option>
               </select>
             </div>
           </div>
@@ -1588,7 +1596,7 @@
         </div>
 
         <!-- Ringkasan Statistik Rekap Web (Disembunyikan Saat Cetak) -->
-        <div class="rekap-web-controls grid grid-cols-2 sm:grid-cols-4 gap-3.5 mb-6">
+        <div class="rekap-web-controls grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-5 gap-3.5 mb-6">
           <div
             class="bg-white border border-slate-200/80 rounded-2xl p-4 shadow-[0_2px_10px_rgba(15,23,42,0.03)] flex items-center justify-between">
             <div>
@@ -1626,6 +1634,20 @@
               <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
                   d="M12 8v4m0 4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"></path>
+              </svg>
+            </div>
+          </div>
+          <div
+            class="bg-white border border-slate-200/80 rounded-2xl p-4 shadow-[0_2px_10px_rgba(15,23,42,0.03)] flex items-center justify-between">
+            <div>
+              <p class="text-[10px] font-bold uppercase tracking-wider text-slate-400">OFF (Libur)</p>
+              <h4 id="rekap-stat-off" class="text-xl font-extrabold text-slate-700 mt-0.5">0 Orang</h4>
+            </div>
+            <div class="w-8 h-8 rounded-xl bg-slate-100 text-slate-600 flex items-center justify-center font-bold">
+              <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                  d="M18.364 18.364A9 9 0 005.636 5.636m12.728 12.728A9 9 0 015.636 5.636m12.728 12.728L5.636 5.636">
+                </path>
               </svg>
             </div>
           </div>
@@ -2248,13 +2270,14 @@
           </select>
         </div>
 
-        <!-- Status (Sambut Pagi / Tidak Sambut Pagi) -->
+        <!-- Status (Sambut Pagi / Tidak Sambut Pagi / OFF) -->
         <div>
           <label class="block text-xs font-semibold text-slate-700 uppercase mb-1">Status</label>
           <select id="edit-presensi-piket-select"
             class="w-full px-3.5 py-2.5 bg-slate-50 border border-slate-300 rounded-xl focus:ring-2 focus:ring-emerald-500 focus:outline-none text-slate-800 font-medium text-xs">
             <option value="Sambut Pagi">Sambut Pagi</option>
             <option value="Tidak Sambut Pagi">Tidak Sambut Pagi</option>
+            <option value="OFF (Tidak Ada Jadwal)">OFF (Tidak Ada Jadwal)</option>
           </select>
         </div>
 
@@ -3805,14 +3828,34 @@
 
     // Helper: Konversi string jam (contoh: "06.30.00 WIB", "13.50.53 WIB", "13:51") ke total detik untuk pengurutan
     function parseJamKehadiranToSeconds(jamStr) {
-      if (!jamStr) return 0;
+      if (!jamStr || String(jamStr).trim() === '-') return 999999;
       const clean = String(jamStr).trim();
       const match = clean.match(/(\d{1,2})[:.](\d{2})(?:[:.](\d{2}))?/);
-      if (!match) return 0;
+      if (!match) return 999999;
       const h = parseInt(match[1], 10) || 0;
       const m = parseInt(match[2], 10) || 0;
       const s = parseInt(match[3] || '0', 10) || 0;
       return h * 3600 + m * 60 + s;
+    }
+
+    // Helper: Periksa apakah status adalah OFF / Tidak Ada Jadwal (artinya tidak hadir)
+    function isOffStatus(piketVal) {
+      if (!piketVal) return false;
+      const s = String(piketVal).toLowerCase();
+      return s.includes('off') || s.includes('tidak ada jadwal');
+    }
+
+    // Helper: Normalisasi Status Sambut Pagi / Piket secara konsisten
+    function normalizePiketStatus(piketVal) {
+      if (!piketVal) return 'Sambut Pagi';
+      const s = String(piketVal).trim().toLowerCase();
+      if (s.includes('off') || s.includes('tidak ada jadwal')) {
+        return 'OFF (Tidak Ada Jadwal)';
+      }
+      if (s.includes('tidak') || s.includes('bukan')) {
+        return 'Tidak Sambut Pagi';
+      }
+      return 'Sambut Pagi';
     }
 
     // Ambil Riwayat Presensi Hari Ini (dengan urutan kehadiran paling AWAL berada di posisi ATAS)
@@ -4083,17 +4126,24 @@
 
       let html = '';
       matched.forEach(p => {
-        const sudahHadir = presensiHariIni.find(x => String(x.pegawai_id) === String(p.id));
+        const sudahPresensi = presensiHariIni.find(x => String(x.pegawai_id) === String(p.id));
         const initials = getInitials(p.nama_lengkap);
         const avatarStyle = getAvatarClass(p.nama_lengkap);
 
-        // Status badge kecil dan rapi hanya jika sudah hadir
-        const statusBadge = sudahHadir
-          ? `<span class="inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-[10px] font-bold bg-emerald-50 text-emerald-700 border border-emerald-200/80 shrink-0">
+        // Status badge kecil dan rapi jika sudah tercatat presensi
+        let statusBadge = '';
+        if (sudahPresensi) {
+          if (isOffStatus(sudahPresensi.piket)) {
+            statusBadge = `<span class="inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-[10px] font-bold bg-slate-100 text-slate-700 border border-slate-300 shrink-0">
+               <span>OFF (Tidak Hadir)</span>
+             </span>`;
+          } else {
+            statusBadge = `<span class="inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-[10px] font-bold bg-emerald-50 text-emerald-700 border border-emerald-200/80 shrink-0">
                <svg class="w-2.5 h-2.5 text-emerald-600" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M5 13l4 4L19 7"></path></svg>
-               <span>Hadir (${escapeHtml(sudahHadir.jam)})</span>
-             </span>`
-          : '';
+               <span>Hadir (${escapeHtml(sudahPresensi.jam)})</span>
+             </span>`;
+          }
+        }
 
         html += `
           <div onclick="pilihPegawaiSearch('${p.id}')"
@@ -4185,34 +4235,43 @@
 
       const tanggalHariIni = getFormattedDateToday();
 
+      const piket = document.getElementById('presensi-piket-select').value;
+      const keterangan = document.getElementById('presensi-keterangan').value.trim();
+
       // Ambil jam kedatangan otomatis dari jam berjalan saat ini
       const now = new Date();
       const h = now.getHours();
       const m = now.getMinutes();
       const s = now.getSeconds();
-      const jamKedatangan = `${String(h).padStart(2, '0')}.${String(m).padStart(2, '0')}.${String(s).padStart(2, '0')} WIB`;
+      let jamKedatangan = `${String(h).padStart(2, '0')}.${String(m).padStart(2, '0')}.${String(s).padStart(2, '0')} WIB`;
+      let statusKetepatan = "Tepat Waktu (≤ 06.35)";
 
-      // Otomatis tentukan status ketepatan waktu berdasarkan batas sambut pagi (06.35 WIB)
-      const timeInMinutes = h * 60 + m;
-      const limitSambutPagi = 6 * 60 + 35; // 06.35 WIB
-      const limitMasukKerja = 6 * 60 + 40; // 06.40 WIB
-
-      let statusKetepatan = "Tepat Waktu";
-      if (timeInMinutes <= limitSambutPagi) {
-        statusKetepatan = "Tepat Waktu (≤ 06.35)";
-      } else if (timeInMinutes <= limitMasukKerja) {
-        statusKetepatan = "Terlambat Sambut Pagi";
+      // Jika status OFF (Tidak Ada Jadwal), tandai sebagai tidak hadir (jam = '-')
+      if (isOffStatus(piket)) {
+        jamKedatangan = "-";
+        statusKetepatan = "OFF (Tidak Ada Jadwal)";
       } else {
-        statusKetepatan = "Terlambat (> 06.35)";
-      }
+        // Otomatis tentukan status ketepatan waktu berdasarkan batas sambut pagi (06.35 WIB)
+        const timeInMinutes = h * 60 + m;
+        const limitSambutPagi = 6 * 60 + 35; // 06.35 WIB
+        const limitMasukKerja = 6 * 60 + 40; // 06.40 WIB
 
-      const piket = document.getElementById('presensi-piket-select').value;
-      const keterangan = document.getElementById('presensi-keterangan').value.trim();
+        if (timeInMinutes <= limitSambutPagi) {
+          statusKetepatan = "Tepat Waktu (≤ 06.35)";
+        } else if (timeInMinutes <= limitMasukKerja) {
+          statusKetepatan = "Terlambat Sambut Pagi";
+        } else {
+          statusKetepatan = "Terlambat (> 06.35)";
+        }
+      }
 
       // Cek apakah pegawai sudah tercatat presensi hari ini
       const existingIdx = dataPresensi.findIndex(item => String(item.pegawai_id) === String(pegawaiId) && (!item.tanggal || item.tanggal === tanggalHariIni));
       if (existingIdx !== -1) {
-        if (!confirm(`Pegawai ${pegawai.nama_lengkap} sudah tercatat presensi hari ini pada ${dataPresensi[existingIdx].jam}. Apakah ingin memperbarui jam kehadirannya ke ${jamKedatangan}?`)) {
+        const msgConfirm = isOffStatus(piket)
+          ? `Pegawai ${pegawai.nama_lengkap} sudah tercatat sebelumnya. Apakah ingin memperbarui statusnya menjadi OFF (Tidak Ada Jadwal / Tidak Hadir)?`
+          : `Pegawai ${pegawai.nama_lengkap} sudah tercatat presensi hari ini pada ${dataPresensi[existingIdx].jam}. Apakah ingin memperbarui jam kehadirannya ke ${jamKedatangan}?`;
+        if (!confirm(msgConfirm)) {
           return;
         }
         dataPresensi[existingIdx] = {
@@ -4244,7 +4303,8 @@
       document.getElementById('form-presensi-manual').reset();
       resetPilihanPegawai();
       populateSelectPegawai();
-      alert(`✅ Presensi berhasil disimpan:\n- Pegawai: ${pegawai.nama_lengkap}\n- Jam Kehadiran: ${jamKedatangan}\n- Status: ${piket}`);
+      const infoWaktu = isOffStatus(piket) ? 'Keterangan: OFF (Tidak Hadir / Tidak Ada Jadwal)' : `Jam Kehadiran: ${jamKedatangan}`;
+      alert(`✅ Presensi berhasil disimpan:\n- Pegawai: ${pegawai.nama_lengkap}\n- Status: ${piket}\n- ${infoWaktu}`);
     }
 
     // Render Presensi Table (Khusus Hari Ini)
@@ -4257,10 +4317,11 @@
       tbody.innerHTML = '';
 
       const presensiHariIni = getPresensiHariIni();
+      const hadirCount = presensiHariIni.filter(p => !isOffStatus(p.piket)).length;
 
-      if (countEl) countEl.innerText = presensiHariIni.length;
+      if (countEl) countEl.innerText = hadirCount;
       const countFooter = document.getElementById('presensi-total-count-footer');
-      if (countFooter) countFooter.innerText = presensiHariIni.length;
+      if (countFooter) countFooter.innerText = hadirCount;
 
       const tabelEl = document.getElementById('tabel-riwayat-presensi');
 
@@ -4301,10 +4362,17 @@
           </button>
         ` : '';
 
-        const statusVal = (item.piket === 'Tidak Sambut Pagi' || item.piket === 'Bukan Petugas Piket') ? 'Tidak Sambut Pagi' : 'Sambut Pagi';
-        const badgeStyle = statusVal === 'Sambut Pagi'
-          ? 'bg-emerald-50 text-emerald-700 border border-emerald-200/80'
-          : 'bg-slate-100 text-slate-700 border border-slate-200/80';
+        const statusVal = normalizePiketStatus(item.piket);
+        let badgeStyle = 'bg-emerald-50 text-emerald-700 border border-emerald-200/80';
+        if (statusVal === 'OFF (Tidak Ada Jadwal)') {
+          badgeStyle = 'bg-slate-100 text-slate-700 border border-slate-300 font-semibold';
+        } else if (statusVal === 'Tidak Sambut Pagi') {
+          badgeStyle = 'bg-amber-50 text-amber-700 border border-amber-200/80';
+        }
+
+        const displayJam = (statusVal === 'OFF (Tidak Ada Jadwal)' && (!item.jam || item.jam === '-' || item.jam.includes('WIB')))
+          ? '-'
+          : escapeHtml(item.jam || '-');
 
         tr.innerHTML = `
           <td class="p-3.5 text-center text-xs text-slate-400 font-medium">${idx + 1}</td>
@@ -4320,7 +4388,7 @@
               </div>
             </div>
           </td>
-          <td class="p-3.5 font-mono text-xs text-slate-800 font-bold whitespace-nowrap">${escapeHtml(item.jam)}</td>
+          <td class="p-3.5 font-mono text-xs text-slate-800 font-bold whitespace-nowrap">${displayJam}</td>
           <td class="p-3.5 text-xs text-slate-600">
             <span class="inline-flex items-center px-2.5 py-0.5 rounded-md text-xs font-semibold ${badgeStyle}">${statusVal}</span>
           </td>
@@ -4365,7 +4433,7 @@
       document.getElementById('edit-presensi-time').value = `${hh}:${mm}`;
       document.getElementById('edit-presensi-wib').value = `${hh}.${mm}.${ss} WIB`;
       document.getElementById('edit-presensi-status-select').value = item.status || 'Tepat Waktu (≤ 06.35)';
-      const currentPiket = (item.piket === 'Tidak Sambut Pagi' || item.piket === 'Bukan Petugas Piket' || item.piket === 'Bukan Piket') ? 'Tidak Sambut Pagi' : 'Sambut Pagi';
+      const currentPiket = normalizePiketStatus(item.piket);
       document.getElementById('edit-presensi-piket-select').value = currentPiket;
       document.getElementById('edit-presensi-keterangan').value = item.keterangan || '';
 
@@ -4440,15 +4508,23 @@
       const idx = dataPresensi.findIndex(x => x.id == id);
       if (idx === -1) return;
 
-      const timeVal = document.getElementById('edit-presensi-time').value;
-      const parts = timeVal.split(':');
-      const hhStr = String(parts[0]).padStart(2, '0');
-      const mmStr = String(parts[1]).padStart(2, '0');
-      const jamFormatted = `${hhStr}.${mmStr}.00 WIB`;
-
-      const status = document.getElementById('edit-presensi-status-select').value;
       const piket = document.getElementById('edit-presensi-piket-select').value;
       const keterangan = document.getElementById('edit-presensi-keterangan').value.trim();
+
+      let jamFormatted = "-";
+      let status = "OFF (Tidak Ada Jadwal)";
+
+      if (isOffStatus(piket)) {
+        jamFormatted = "-";
+        status = "OFF (Tidak Ada Jadwal)";
+      } else {
+        const timeVal = document.getElementById('edit-presensi-time').value;
+        const parts = timeVal ? timeVal.split(':') : ['06', '30'];
+        const hhStr = String(parts[0] || '06').padStart(2, '0');
+        const mmStr = String(parts[1] || '30').padStart(2, '0');
+        jamFormatted = `${hhStr}.${mmStr}.00 WIB`;
+        status = document.getElementById('edit-presensi-status-select').value;
+      }
 
       dataPresensi[idx] = {
         ...dataPresensi[idx],
@@ -4461,7 +4537,7 @@
       saveDataPresensi();
       kirimKeGoogleSheets('simpanPresensi', { data: dataPresensi[idx] });
       tutupModalEditPresensi();
-      alert(`✅ Presensi ${dataPresensi[idx].nama} berhasil diperbarui:\n- Jam: ${jamFormatted}\n- Status: ${piket}\n- Keterangan: ${keterangan || '-'}`);
+      alert(`✅ Presensi ${dataPresensi[idx].nama} berhasil diperbarui:\n- Status: ${piket}\n- Jam: ${jamFormatted}\n- Keterangan: ${keterangan || '-'}`);
     }
 
     // ==============================================================================
@@ -4552,7 +4628,13 @@
     function updateDashboardStats() {
       const presensiHariIni = getPresensiHariIni();
       const totalPegawai = dataPegawai.length;
-      const totalHadir = presensiHariIni.length;
+
+      // Filter presensi yang benar-benar HADIR (Mengecualikan OFF / Tidak Ada Jadwal)
+      const hadirRecords = presensiHariIni.filter(p => !isOffStatus(p.piket));
+      const totalHadir = hadirRecords.length;
+
+      // Hitung pegawai yang OFF (Tidak Ada Jadwal / Tidak Hadir)
+      const offCount = presensiHariIni.filter(p => isOffStatus(p.piket)).length;
 
       // 1. Top Stat Cards
       const elTotal = document.getElementById('stat-total-pegawai');
@@ -4561,18 +4643,18 @@
       const elHadir = document.getElementById('stat-hadir-hari-ini');
       if (elHadir) elHadir.innerText = `${totalHadir} Orang`;
 
-      const piketCount = presensiHariIni.filter(p => p.piket !== 'Tidak Sambut Pagi' && p.piket !== 'Bukan Petugas Piket').length;
+      const piketCount = presensiHariIni.filter(p => normalizePiketStatus(p.piket) === 'Sambut Pagi').length;
       const elPiket = document.getElementById('stat-piket-hari-ini');
       if (elPiket) elPiket.innerText = `${piketCount} Orang`;
 
       // 2. Progres Kehadiran & Badges
-      const tepatCount = presensiHariIni.filter(p => (p.status || '').includes('Tepat')).length;
-      const terlambatCount = totalHadir - tepatCount;
-      const belumHadirCount = Math.max(0, totalPegawai - totalHadir);
+      const tepatCount = hadirRecords.filter(p => (p.status || '').includes('Tepat')).length;
+      const terlambatCount = Math.max(0, totalHadir - tepatCount);
+      const belumHadirCount = Math.max(0, totalPegawai - totalHadir - offCount);
       const percentage = totalPegawai > 0 ? Math.round((totalHadir / totalPegawai) * 100) : 0;
 
       const progressLabel = document.getElementById('dashboard-progress-label');
-      if (progressLabel) progressLabel.innerText = `${totalHadir} dari ${totalPegawai} pegawai telah hadir (${percentage}%)`;
+      if (progressLabel) progressLabel.innerText = `${totalHadir} dari ${totalPegawai} pegawai telah hadir (${percentage}%)${offCount > 0 ? ` • ${offCount} pegawai OFF` : ''}`;
 
       const progressBar = document.getElementById('dashboard-progress-bar');
       if (progressBar) progressBar.style.width = `${percentage}%`;
@@ -4582,6 +4664,9 @@
 
       const bTerlambat = document.getElementById('badge-terlambat-count');
       if (bTerlambat) bTerlambat.innerText = `${terlambatCount} Terlambat`;
+
+      const bOff = document.getElementById('badge-off-count');
+      if (bOff) bOff.innerText = `${offCount} OFF`;
 
       const bBelum = document.getElementById('badge-belum-hadir-count');
       if (bBelum) bBelum.innerText = `${belumHadirCount} Belum Hadir`;
@@ -4600,10 +4685,15 @@
             tr.className = "hover:bg-slate-50/80 transition duration-150";
             const initials = getInitials(item.nama);
             const avatarStyle = getAvatarClass(item.nama);
-            const isLate = (item.status || '').includes('Terlambat');
-            const badge = isLate
-              ? '<span class="inline-flex items-center px-2 py-0.5 rounded-full text-[10px] font-bold bg-amber-50 text-amber-700 border border-amber-200/80">Terlambat</span>'
-              : '<span class="inline-flex items-center px-2 py-0.5 rounded-full text-[10px] font-bold bg-emerald-50 text-emerald-700 border border-emerald-200/80">Tepat Waktu</span>';
+            const statusVal = normalizePiketStatus(item.piket);
+            let badge = '<span class="inline-flex items-center px-2 py-0.5 rounded-full text-[10px] font-bold bg-emerald-50 text-emerald-700 border border-emerald-200/80">Tepat Waktu</span>';
+            let jamDisplay = escapeHtml(item.jam || '-');
+            if (statusVal === 'OFF (Tidak Ada Jadwal)') {
+              badge = '<span class="inline-flex items-center px-2 py-0.5 rounded-full text-[10px] font-bold bg-slate-100 text-slate-700 border border-slate-300">OFF</span>';
+              jamDisplay = '-';
+            } else if ((item.status || '').includes('Terlambat')) {
+              badge = '<span class="inline-flex items-center px-2 py-0.5 rounded-full text-[10px] font-bold bg-amber-50 text-amber-700 border border-amber-200/80">Terlambat</span>';
+            }
 
             tr.innerHTML = `
               <td class="p-2.5">
@@ -4617,7 +4707,7 @@
                   </div>
                 </div>
               </td>
-              <td class="p-2.5 font-mono text-xs font-bold text-slate-700 whitespace-nowrap">${escapeHtml(item.jam)}</td>
+              <td class="p-2.5 font-mono text-xs font-bold text-slate-700 whitespace-nowrap">${jamDisplay}</td>
               <td class="p-2.5 whitespace-nowrap">${badge}</td>
             `;
             recentTbody.appendChild(tr);
@@ -4631,8 +4721,8 @@
       const countBelumEl = document.getElementById('count-belum-hadir');
       if (unmarkedList) {
         unmarkedList.innerHTML = '';
-        const presentIds = new Set(presensiHariIni.map(x => String(x.pegawai_id)));
-        const unmarkedPegawai = dataPegawai.filter(p => !presentIds.has(String(p.id)));
+        const presentOrOffIds = new Set(presensiHariIni.map(x => String(x.pegawai_id)));
+        const unmarkedPegawai = dataPegawai.filter(p => !presentOrOffIds.has(String(p.id)));
 
         if (countBelumEl) countBelumEl.innerText = unmarkedPegawai.length;
 
@@ -4684,11 +4774,9 @@
         const itemDate = (item.tanggal ? String(item.tanggal).trim().substring(0, 10) : '') || getFormattedDateToday();
         const matchDate = !filterDate ? (itemDate === targetDate) : (itemDate === filterDate);
         let matchStatus = true;
-        const itemStatus = (item.piket === 'Tidak Sambut Pagi' || item.piket === 'Bukan Petugas Piket') ? 'Tidak Sambut Pagi' : 'Sambut Pagi';
-        if (filterStatus === 'Sambut Pagi') {
-          matchStatus = (itemStatus === 'Sambut Pagi');
-        } else if (filterStatus === 'Tidak Sambut Pagi') {
-          matchStatus = (itemStatus === 'Tidak Sambut Pagi');
+        const itemStatus = normalizePiketStatus(item.piket);
+        if (filterStatus) {
+          matchStatus = (itemStatus === filterStatus);
         }
         return matchDate && matchStatus;
       });
@@ -4700,17 +4788,22 @@
         const d = (i.tanggal ? String(i.tanggal).trim().substring(0, 10) : '') || getFormattedDateToday();
         return d === targetDate;
       });
-      const totalDate = dateRecords.length;
-      const sambutCount = dateRecords.filter(i => i.piket !== 'Tidak Sambut Pagi' && i.piket !== 'Bukan Petugas Piket').length;
-      const tidakSambutCount = totalDate - sambutCount;
-      const belumHadirCount = Math.max(0, dataPegawai.length - totalDate);
+      // Hadir hanya menghitung yang hadir (Mengecualikan OFF / Tidak Ada Jadwal)
+      const hadirRecords = dateRecords.filter(i => !isOffStatus(i.piket));
+      const totalHadir = hadirRecords.length;
+      const sambutCount = dateRecords.filter(i => normalizePiketStatus(i.piket) === 'Sambut Pagi').length;
+      const tidakSambutCount = dateRecords.filter(i => normalizePiketStatus(i.piket) === 'Tidak Sambut Pagi').length;
+      const offCount = dateRecords.filter(i => isOffStatus(i.piket)).length;
+      const belumHadirCount = Math.max(0, dataPegawai.length - totalHadir - offCount);
 
       const statTotal = document.getElementById('rekap-stat-total');
-      if (statTotal) statTotal.innerText = `${totalDate} Orang`;
+      if (statTotal) statTotal.innerText = `${totalHadir} Orang`;
       const statPiket = document.getElementById('rekap-stat-piket');
       if (statPiket) statPiket.innerText = `${sambutCount} Orang`;
       const statTidakSambut = document.getElementById('rekap-stat-tidak-sambut');
       if (statTidakSambut) statTidakSambut.innerText = `${tidakSambutCount} Orang`;
+      const statOff = document.getElementById('rekap-stat-off');
+      if (statOff) statOff.innerText = `${offCount} Orang`;
       const statBelum = document.getElementById('rekap-stat-belum');
       if (statBelum) statBelum.innerText = `${belumHadirCount} Orang`;
 
@@ -4737,17 +4830,26 @@
         const avatarStyle = getAvatarClass(item.nama);
 
         // Standarisasi Status Sambut Pagi
-        const statusVal = (item.piket === 'Tidak Sambut Pagi' || item.piket === 'Bukan Petugas Piket') ? 'Tidak Sambut Pagi' : 'Sambut Pagi';
-        const badgePiketStyle = statusVal === 'Sambut Pagi'
-          ? 'bg-emerald-50 text-emerald-700 border border-emerald-200/80'
-          : 'bg-slate-100 text-slate-700 border border-slate-200/80';
+        const statusVal = normalizePiketStatus(item.piket);
+        let badgePiketStyle = 'bg-emerald-50 text-emerald-700 border border-emerald-200/80';
+        if (statusVal === 'OFF (Tidak Ada Jadwal)') {
+          badgePiketStyle = 'bg-slate-100 text-slate-700 border border-slate-300 font-semibold';
+        } else if (statusVal === 'Tidak Sambut Pagi') {
+          badgePiketStyle = 'bg-amber-50 text-amber-700 border border-amber-200/80';
+        }
 
-        // Ketepatan Waktu
+        // Ketepatan Waktu & Jam Kehadiran
         let statusKetepatan = item.status || 'Tepat Waktu (≤ 06.35)';
-        const isLate = statusKetepatan.toLowerCase().includes('terlambat');
-        const badgeKetepatanStyle = isLate
-          ? 'bg-amber-50 text-amber-700 border border-amber-200/80'
-          : 'bg-emerald-50 text-emerald-700 border border-emerald-200/80';
+        let displayJam = item.jam || '-';
+        let badgeKetepatanStyle = 'bg-emerald-50 text-emerald-700 border border-emerald-200/80';
+
+        if (statusVal === 'OFF (Tidak Ada Jadwal)') {
+          statusKetepatan = 'OFF (Tidak Hadir)';
+          displayJam = '-';
+          badgeKetepatanStyle = 'bg-slate-100 text-slate-600 border border-slate-300';
+        } else if (statusKetepatan.toLowerCase().includes('terlambat')) {
+          badgeKetepatanStyle = 'bg-amber-50 text-amber-700 border border-amber-200/80';
+        }
 
         tr.innerHTML = `
           <td class="px-3.5 py-3 text-center text-xs text-slate-400 font-medium">${idx + 1}</td>
@@ -4762,7 +4864,7 @@
           <td class="px-3.5 py-3 text-xs text-slate-700">
             <span class="inline-flex items-center px-2 py-0.5 rounded-md text-xs font-medium bg-slate-100 text-slate-700 border border-slate-200/60">${escapeHtml(item.jabatan || '-')}</span>
           </td>
-          <td class="px-3.5 py-3 text-center font-mono text-xs font-bold text-slate-800 whitespace-nowrap">${escapeHtml(item.jam)}</td>
+          <td class="px-3.5 py-3 text-center font-mono text-xs font-bold text-slate-800 whitespace-nowrap">${displayJam}</td>
           <td class="px-3.5 py-3 text-center whitespace-nowrap">
             <span class="inline-flex items-center px-2 py-0.5 rounded-md text-xs font-semibold ${badgeKetepatanStyle}">${escapeHtml(statusKetepatan)}</span>
           </td>
@@ -4777,6 +4879,12 @@
 
     // Fungsi Cetak Dokumen Resmi Rekapitulasi Presensi Sambut Pagi (A4 Format)
     function cetakRekapLaporan() {
+      const tbody = document.getElementById('rekap-tbody');
+      if (!tbody || tbody.children.length === 0) {
+        alert('Tidak ada data presensi untuk dicetak pada tanggal atau filter yang dipilih!');
+        return;
+      }
+
       const filterDate = document.getElementById('rekap-filter-tanggal') ? document.getElementById('rekap-filter-tanggal').value : '';
       const filterStatus = document.getElementById('rekap-filter-status') ? document.getElementById('rekap-filter-status').value : '';
       const targetDate = filterDate || getFormattedDateToday();
@@ -4796,7 +4904,7 @@
       if (elMetaTgl) elMetaTgl.innerText = tglFormal;
 
       const elMetaStatus = document.getElementById('print-meta-status');
-      if (elMetaStatus) elMetaStatus.innerText = filterStatus ? filterStatus : 'Semua Status (Sambut Pagi & Tidak Sambut Pagi)';
+      if (elMetaStatus) elMetaStatus.innerText = filterStatus ? filterStatus : 'Semua Status (Sambut Pagi, Tidak Sambut, OFF)';
 
       const elMetaWaktu = document.getElementById('print-meta-waktu-cetak');
       if (elMetaWaktu) elMetaWaktu.innerText = `${tglFormal}, ${nowTime}`;
@@ -4805,6 +4913,7 @@
       const sTotal = document.getElementById('rekap-stat-total');
       const sPiket = document.getElementById('rekap-stat-piket');
       const sTidak = document.getElementById('rekap-stat-tidak-sambut');
+      const sOff = document.getElementById('rekap-stat-off');
       const sBelum = document.getElementById('rekap-stat-belum');
 
       const pTotal = document.getElementById('print-stat-total');
@@ -4813,6 +4922,8 @@
       if (pPiket && sPiket) pPiket.innerText = sPiket.innerText;
       const pTidak = document.getElementById('print-stat-tidak');
       if (pTidak && sTidak) pTidak.innerText = sTidak.innerText;
+      const pOff = document.getElementById('print-stat-off');
+      if (pOff && sOff) pOff.innerText = sOff.innerText;
       const pBelum = document.getElementById('print-stat-belum');
       if (pBelum && sBelum) pBelum.innerText = sBelum.innerText;
 
@@ -4847,11 +4958,9 @@
         const itemDate = item.tanggal || getFormattedDateToday();
         const matchDate = !filterDate ? (itemDate === targetDate) : (itemDate === filterDate);
         let matchStatus = true;
-        const itemStatus = (item.piket === 'Tidak Sambut Pagi' || item.piket === 'Bukan Petugas Piket') ? 'Tidak Sambut Pagi' : 'Sambut Pagi';
-        if (filterStatus === 'Sambut Pagi') {
-          matchStatus = (itemStatus === 'Sambut Pagi');
-        } else if (filterStatus === 'Tidak Sambut Pagi') {
-          matchStatus = (itemStatus === 'Tidak Sambut Pagi');
+        const itemStatus = normalizePiketStatus(item.piket);
+        if (filterStatus) {
+          matchStatus = (itemStatus === filterStatus);
         }
         return matchDate && matchStatus;
       });
@@ -4869,16 +4978,25 @@
         return String(a.id || '').localeCompare(String(b.id || ''));
       });
 
-      const rows = filtered.map((item, idx) => ({
-        "No": idx + 1,
-        "Tanggal": item.tanggal || targetDate,
-        "Nama Guru & Karyawan": item.nama,
-        "Jabatan / Tugas": item.jabatan || '-',
-        "Jam Kehadiran": item.jam,
-        "Ketepatan Waktu": item.status || 'Tepat Waktu (≤ 06.35)',
-        "Status Sambut Pagi": (item.piket === 'Tidak Sambut Pagi' || item.piket === 'Bukan Petugas Piket') ? 'Tidak Sambut Pagi' : 'Sambut Pagi',
-        "Keterangan": item.keterangan || '-'
-      }));
+      const rows = filtered.map((item, idx) => {
+        const statusVal = normalizePiketStatus(item.piket);
+        let statusKetepatan = item.status || 'Tepat Waktu (≤ 06.35)';
+        let jamKehadiran = item.jam || '-';
+        if (statusVal === 'OFF (Tidak Ada Jadwal)') {
+          statusKetepatan = 'OFF (Tidak Hadir)';
+          jamKehadiran = '-';
+        }
+        return {
+          "No": idx + 1,
+          "Tanggal": item.tanggal || targetDate,
+          "Nama Guru & Karyawan": item.nama,
+          "Jabatan / Tugas": item.jabatan || '-',
+          "Jam Kehadiran": jamKehadiran,
+          "Ketepatan Waktu": statusKetepatan,
+          "Status Sambut Pagi": statusVal,
+          "Keterangan": item.keterangan || '-'
+        };
+      });
 
       if (typeof XLSX !== 'undefined') {
         const ws = XLSX.utils.json_to_sheet(rows);

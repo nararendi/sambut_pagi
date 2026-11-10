@@ -565,10 +565,12 @@ function getDaftarPresensi(targetTanggal, limitDays) {
       jamKehadiran = String(jamKehadiran || '');
     }
 
-    // Standarisasi Status: 'Sambut Pagi' atau 'Tidak Sambut Pagi'
+    // Standarisasi Status: 'Sambut Pagi', 'Tidak Sambut Pagi', atau 'OFF (Tidak Ada Jadwal)'
     const rawStatusPiket = String(row[7] || '').trim();
     let cleanStatusPiket = 'Sambut Pagi';
-    if (rawStatusPiket.toLowerCase().includes('tidak') || rawStatusPiket.toLowerCase().includes('bukan')) {
+    if (rawStatusPiket.toLowerCase().includes('off') || rawStatusPiket.toLowerCase().includes('tidak ada jadwal')) {
+      cleanStatusPiket = 'OFF (Tidak Ada Jadwal)';
+    } else if (rawStatusPiket.toLowerCase().includes('tidak') || rawStatusPiket.toLowerCase().includes('bukan')) {
       cleanStatusPiket = 'Tidak Sambut Pagi';
     } else {
       cleanStatusPiket = 'Sambut Pagi';
@@ -636,27 +638,41 @@ function rekamPresensiPegawai(data) {
     const tanggal = normalizeDateString(data.tanggal) || getFormattedDateToday();
     const pegawaiId = String(data.pegawai_id || '').replace(/^'/, '').trim();
     const now = new Date();
-    const jamKehadiran = data.jam || (Utilities.formatDate(now, CONFIG.TIMEZONE, 'HH.mm.ss') + ' WIB');
     const timestamp = Utilities.formatDate(now, CONFIG.TIMEZONE, 'yyyy-MM-dd HH:mm:ss');
 
-    // Bersihkan nilai status: 'Sambut Pagi' atau 'Tidak Sambut Pagi'
+    // Bersihkan nilai status: 'Sambut Pagi', 'Tidak Sambut Pagi', atau 'OFF (Tidak Ada Jadwal)'
     const rawPiket = String(data.piket || '').trim();
     let statusPiket = 'Sambut Pagi';
-    if (rawPiket.toLowerCase().includes('tidak') || rawPiket.toLowerCase().includes('bukan')) {
+    if (rawPiket.toLowerCase().includes('off') || rawPiket.toLowerCase().includes('tidak ada jadwal')) {
+      statusPiket = 'OFF (Tidak Ada Jadwal)';
+    } else if (rawPiket.toLowerCase().includes('tidak') || rawPiket.toLowerCase().includes('bukan')) {
       statusPiket = 'Tidak Sambut Pagi';
     } else {
       statusPiket = 'Sambut Pagi';
     }
 
+    let jamKehadiran = data.jam;
+    if (!jamKehadiran) {
+      if (statusPiket === 'OFF (Tidak Ada Jadwal)') {
+        jamKehadiran = '-';
+      } else {
+        jamKehadiran = Utilities.formatDate(now, CONFIG.TIMEZONE, 'HH.mm.ss') + ' WIB';
+      }
+    }
+
     let status = data.status;
     if (!status) {
-      const hhmm = Utilities.formatDate(now, CONFIG.TIMEZONE, 'HH:mm');
-      if (hhmm <= CONFIG.BATAS_SAMBUT_PAGI) {
-        status = 'Tepat Waktu (≤ 06.35)';
-      } else if (hhmm <= CONFIG.BATAS_MASUK_KERJA) {
-        status = 'Terlambat Sambut Pagi';
+      if (statusPiket === 'OFF (Tidak Ada Jadwal)') {
+        status = 'OFF (Tidak Ada Jadwal)';
       } else {
-        status = 'Terlambat (> 06.35)';
+        const hhmm = Utilities.formatDate(now, CONFIG.TIMEZONE, 'HH:mm');
+        if (hhmm <= CONFIG.BATAS_SAMBUT_PAGI) {
+          status = 'Tepat Waktu (≤ 06.35)';
+        } else if (hhmm <= CONFIG.BATAS_MASUK_KERJA) {
+          status = 'Terlambat Sambut Pagi';
+        } else {
+          status = 'Terlambat (> 06.35)';
+        }
       }
     }
 
@@ -884,10 +900,10 @@ function createJsonResponse(data) {
  * Helper: Konversi string jam (contoh: "06.30.00 WIB", "13.50.53 WIB", "13:50") ke total detik
  */
 function parseJamStringToSeconds(jamStr) {
-  if (!jamStr) return 0;
+  if (!jamStr || String(jamStr).trim() === '-') return 999999;
   var clean = String(jamStr).trim();
   var match = clean.match(/(\d{1,2})[:.](\d{2})(?:[:.](\d{2}))?/);
-  if (!match) return 0;
+  if (!match) return 999999;
   var h = parseInt(match[1], 10) || 0;
   var m = parseInt(match[2], 10) || 0;
   var s = parseInt(match[3] || '0', 10) || 0;
