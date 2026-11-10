@@ -38,26 +38,24 @@
     }
   </script>
   <script>
-    // Deteksi awal autentikasi (Zero Flash) saat reload / refresh browser di laptop & smartphone
+    // Inisialisasi Keamanan Sesi: Sesi login HANYA berlaku di tab/jendela aktif (sessionStorage).
+    // Begitu aplikasi/browser ditutup, sesi otomatis berakhir sehingga saat dibuka kembali
+    // aplikasi SELALU meminta login kembali untuk menjaga keamanan data.
     (function () {
       try {
+        // Bersihkan seluruh residu autentikasi permanen di localStorage/cookie/window.name
+        try { localStorage.removeItem('smk_auth_user_v3'); } catch (e) { }
+        try { localStorage.removeItem('smk_session_auth_v2'); } catch (e) { }
+        try { localStorage.removeItem('smk_assalaam_auth_v1'); } catch (e) { }
+        try { localStorage.removeItem('smk_active_tab_v3'); } catch (e) { }
+        try { window.name = ''; } catch (e) { }
+        try {
+          document.cookie = 'smk_auth_user_v3=; expires=Thu, 01 Jan 1970 00:00:00 UTC; path=/;';
+        } catch (e) { }
+
+        // Cek HANYA sessionStorage aktif (hanya ada jika pengguna sedang bekerja & melakukan refresh di tab yang sama)
         var raw = null;
-        try { raw = sessionStorage.getItem('smk_auth_user_v3') || localStorage.getItem('smk_auth_user_v3'); } catch (e) { }
-        if (!raw) {
-          try { raw = sessionStorage.getItem('smk_session_auth_v2') || localStorage.getItem('smk_session_auth_v2'); } catch (e) { }
-        }
-        if (!raw) {
-          try { raw = localStorage.getItem('smk_assalaam_auth_v1'); } catch (e) { }
-        }
-        if (!raw) {
-          try {
-            var match = document.cookie.match(/(?:^|; )smk_auth_user_v3=([^;]*)/);
-            if (match) raw = decodeURIComponent(match[1]);
-          } catch (e) { }
-        }
-        if (!raw && window.name && window.name.indexOf('"username"') !== -1) {
-          raw = window.name;
-        }
+        try { raw = sessionStorage.getItem('smk_auth_user_v3'); } catch (e) { }
 
         if (raw) {
           var u = JSON.parse(raw);
@@ -2588,67 +2586,47 @@
     let currentUser = null;
 
     // ==============================================================================
-    // MANAJEMEN SESI AKTIF (100% PERSISTEN & KEBAL REFRESH / RELOAD)
+    // MANAJEMEN SESI AKTIF (KEAMANAN DATA TINGGI - SESSION ONLY)
     // ==============================================================================
-    // Prinsip:
-    // 1. Sekali login berhasil, akun tersimpan aman di localStorage & sessionStorage.
-    // 2. Saat browser di-refresh (F5, tombol reload, pull-to-refresh smartphone):
-    //    Sesi 100% TETAP AKTIF & TAB YANG SEDANG DIBUKA TETAP DIPERTAHANKAN.
-    // 3. User HANYA kembali ke halaman login jika mengklik tombol "Keluar (Logout)" secara sengaja.
+    // Prinsip Keamanan Data:
+    // 1. Sesi login HANYA disimpan di sessionStorage (bukan localStorage permanen).
+    // 2. Saat aplikasi pertama kali dibuka -> Langsung masuk ke Halaman Login.
+    // 3. Begitu aplikasi/browser di-close dan dibuka kembali -> PASTI kembali ke Halaman Login.
+    // 4. Saat aplikasi sedang aktif dibuka dan pengguna melakukan refresh (F5/pull-to-refresh),
+    //    sessionStorage tetap dipertahankan di tab yang sama agar pekerjaan tidak hilang.
 
     function saveAuthSession(user) {
       currentUser = user;
       const userJson = JSON.stringify(user);
 
-      // Simpan ke storage lokal & sesi browser
+      // Simpan HANYA ke sessionStorage (otomatis musnah saat tab/aplikasi ditutup)
       try { sessionStorage.setItem(STORAGE_KEY_AUTH_USER, userJson); } catch (e) { }
-      try { localStorage.setItem(STORAGE_KEY_AUTH_USER, userJson); } catch (e) { }
 
-      // Cadangan cookie & window.name
+      // Bersihkan media penyimpanan permanen agar kredensial tidak tertinggal di perangkat
+      try { localStorage.removeItem(STORAGE_KEY_AUTH_USER); } catch (e) { }
+      try { localStorage.removeItem('smk_session_auth_v2'); } catch (e) { }
+      try { localStorage.removeItem('smk_assalaam_auth_v1'); } catch (e) { }
+      try { window.name = ''; } catch (e) { }
       try {
-        document.cookie = `${STORAGE_KEY_AUTH_USER}=${encodeURIComponent(userJson)}; path=/; SameSite=Lax`;
+        document.cookie = `${STORAGE_KEY_AUTH_USER}=; expires=Thu, 01 Jan 1970 00:00:00 UTC; path=/;`;
       } catch (e) { }
-      try { window.name = userJson; } catch (e) { }
     }
 
     function getAuthSession() {
-      // 1. Cek sessionStorage & localStorage utama
+      // Pastikan storage permanen bersih dari jejak sesi lama
+      try { localStorage.removeItem(STORAGE_KEY_AUTH_USER); } catch (e) { }
+      try { localStorage.removeItem('smk_session_auth_v2'); } catch (e) { }
+      try { localStorage.removeItem('smk_assalaam_auth_v1'); } catch (e) { }
+
+      // Ambil HANYA dari sessionStorage (hanya ada selama tab/sesi belum ditutup)
       let raw = null;
       try { raw = sessionStorage.getItem(STORAGE_KEY_AUTH_USER); } catch (e) { }
-      if (!raw) {
-        try { raw = localStorage.getItem(STORAGE_KEY_AUTH_USER); } catch (e) { }
-      }
-
-      // 2. Fallback kompatibilitas key versi sebelumnya jika ada
-      if (!raw) {
-        try { raw = sessionStorage.getItem('smk_session_auth_v2') || localStorage.getItem('smk_session_auth_v2'); } catch (e) { }
-      }
-      if (!raw) {
-        try { raw = localStorage.getItem('smk_assalaam_auth_v1'); } catch (e) { }
-      }
-
-      // 3. Fallback Cookie
-      if (!raw) {
-        try {
-          const match = document.cookie.match(new RegExp('(?:^|; )' + STORAGE_KEY_AUTH_USER + '=([^;]*)'));
-          if (match) raw = decodeURIComponent(match[1]);
-        } catch (e) { }
-      }
-
-      // 4. Fallback window.name
-      if (!raw && window.name && window.name.indexOf('"username"') !== -1) {
-        raw = window.name;
-      }
 
       if (!raw) return null;
 
       try {
         const user = JSON.parse(raw);
         if (user && user.username) {
-          // Sinkronkan kembali ke seluruh media penyimpanan
-          try { sessionStorage.setItem(STORAGE_KEY_AUTH_USER, JSON.stringify(user)); } catch (e) { }
-          try { localStorage.setItem(STORAGE_KEY_AUTH_USER, JSON.stringify(user)); } catch (e) { }
-          try { window.name = JSON.stringify(user); } catch (e) { }
           return user;
         }
       } catch (e) { }
@@ -2723,6 +2701,13 @@
         loginEl.style.display = 'flex';
         loginEl.classList.remove('hidden');
       }
+      // Bersihkan input login dan pesan error
+      const uInput = document.getElementById('login-username');
+      const pInput = document.getElementById('login-password');
+      if (uInput) uInput.value = '';
+      if (pInput) pInput.value = '';
+      const errAlert = document.getElementById('login-error-alert');
+      if (errAlert) errAlert.classList.add('hidden');
       window.scrollTo(0, 0);
     }
 
@@ -3279,10 +3264,10 @@
     // ==============================================================================
     // KONFIGURASI BACKEND UTAMA (GOOGLE APPS SCRIPT)
     // ==============================================================================
-    // PENTING: Masukkan URL Web App Google Apps Script di dalam tanda kutip di bawah ini
-    // agar SEMUA HP / Smartphone, Tablet, & Komputer OTOMATIS langsung terhubung & sinkron
-    // data tanpa perlu memasukkan URL secara manual di masing-masing perangkat!
-    const DEFAULT_GAS_URL = "";
+    // URL Web App Google Apps Script Resmi:
+    // Terpasang langsung agar SEMUA HP/Smartphone, Tablet, & Komputer OTOMATIS
+    // langsung terhubung & sinkron data tanpa perlu memasukkan URL secara manual!
+    const DEFAULT_GAS_URL = "https://script.google.com/macros/s/AKfycbyqu6WYZ422GgaljDjUUVPviM0alLmhvyfhUSj3UH0FTxRmwdSgdGqfBkdB_vK24Hvn-w/exec";
 
     // Storage Keys
     const STORAGE_KEY_PEGAWAI = 'smk_assalaam_pegawai_v1';
@@ -3294,11 +3279,13 @@
     let parsedImportData = [];
     let currentCloudState = 'lokal';
 
-    // Helper: Ambil URL Google Apps Script Aktif (Prioritas: LocalStorage jika pernah disimpan manual, fallback ke DEFAULT_GAS_URL)
+    // Helper: Ambil URL Google Apps Script Aktif (Prioritas: DEFAULT_GAS_URL resmi, fallback ke LocalStorage)
     function getScriptUrl() {
+      const defaultUrl = (DEFAULT_GAS_URL || '').trim();
       const localUrl = (localStorage.getItem(STORAGE_KEY_SCRIPT_URL) || '').trim();
+      if (defaultUrl) return defaultUrl;
       if (localUrl) return localUrl;
-      return (DEFAULT_GAS_URL || '').trim();
+      return '';
     }
 
     // Update Status UI (Desktop Sidebar & Mobile Header)
@@ -3692,9 +3679,9 @@
         tabId = 'presensi';
       }
 
-      // SIMPAN HALAMAN AKTIF: Agar saat di-refresh, halaman/tab yang sedang dibuka tetap dipertahankan
+      // SIMPAN HALAMAN AKTIF: Hanya berlaku di tab aktif selama sesi browser berjalan
       try { sessionStorage.setItem(STORAGE_KEY_SESSION_TAB, tabId); } catch (e) { }
-      try { localStorage.setItem(STORAGE_KEY_SESSION_TAB, tabId); } catch (e) { }
+      try { localStorage.removeItem(STORAGE_KEY_SESSION_TAB); } catch (e) { }
 
       // Sembunyikan seluruh tab konten secara tegas
       document.querySelectorAll('.tab-content').forEach(el => {
@@ -3806,17 +3793,18 @@
         }
       } catch (e) { }
 
-      // 2. Cek Sesi Autentikasi Pengguna (Tahan Banting & Kebal Refresh di Browser & Google Sites)
+      // 2. Cek Sesi Autentikasi Pengguna (Keamanan Data: Session-Only)
       currentUser = getAuthSession();
 
       if (!currentUser) {
-        // Belum login: Tampilkan form login
+        // Belum login (baru dibuka pertama kali / aplikasi baru saja dibuka kembali setelah ditutup)
+        // Wajib tampilkan halaman login untuk keamanan data
         showLoginView();
         return;
       }
 
-      // SUDAH LOGIN (SAAT DI-REFRESH):
-      // Sesi tetap dipertahankan & tampilkan aplikasi secara instan tanpa kembali ke form login!
+      // SUDAH LOGIN (SAAT DI-REFRESH DI TAB YANG SAMA):
+      // Sesi tetap dipertahankan & tampilkan aplikasi secara instan tanpa mengganggu pekerjaan pengguna
       try {
         showAppView();
         applyRolePermissions();
@@ -3826,10 +3814,10 @@
         const rekapDateInput = document.getElementById('rekap-filter-tanggal');
         if (rekapDateInput) rekapDateInput.value = getFormattedDateToday();
 
-        // PERTAHANKAN HALAMAN (TAB) YANG SEDANG DIBUKA SEBELUM DI-REFRESH
+        // Pertahankan tab aktif di sesi tab saat ini
         let savedTab = 'presensi';
         try {
-          savedTab = sessionStorage.getItem(STORAGE_KEY_SESSION_TAB) || localStorage.getItem(STORAGE_KEY_SESSION_TAB) || 'presensi';
+          savedTab = sessionStorage.getItem(STORAGE_KEY_SESSION_TAB) || 'presensi';
         } catch (e) { }
         if (currentUser.role === 'petugas' && (savedTab === 'pegawai' || savedTab === 'pengaturan-user')) {
           savedTab = 'presensi';
