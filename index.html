@@ -1524,7 +1524,7 @@
               <p><span class="font-bold text-slate-900">Status Filter :</span> <span id="print-meta-status">-</span></p>
             </div>
             <div class="text-right space-y-0.5">
-              <p><span class="font-bold text-slate-900">Batas Tepat Waktu :</span> <span>Pukul 06.35 WIB</span></p>
+              <p><span class="font-bold text-slate-900">Batas Sambut Pagi :</span> <span>≤ 06.35 WIB (Toleransi: 06.40 WIB)</span></p>
               <p><span class="font-bold text-slate-900">Waktu Cetak :</span> <span id="print-meta-waktu-cetak" class="font-mono text-[10px]">-</span></p>
             </div>
           </div>
@@ -2269,7 +2269,7 @@
             <input type="text" id="edit-presensi-wib" readonly
               class="w-full px-3 py-2.5 bg-slate-100 border border-slate-200 rounded-xl text-slate-500 font-mono text-xs text-center font-semibold">
           </div>
-          <p class="text-[11px] text-slate-400 mt-1">Batas tepat waktu sambut pagi: ≤ 06.35 WIB</p>
+          <p class="text-[11px] text-slate-400 mt-1">Rentang: ≤ 06.35 (Tepat Waktu) &bull; 06.36 - 06.40 (Terlambat Sambut Pagi) &bull; &gt; 06.40 (Terlambat)</p>
         </div>
 
         <!-- Status Ketepatan Waktu (Disembunyikan agar tampilan bersih & konsisten) -->
@@ -2279,7 +2279,7 @@
             class="w-full px-3.5 py-2.5 bg-slate-50 border border-slate-300 rounded-xl focus:ring-2 focus:ring-emerald-500 focus:outline-none text-slate-800 font-medium text-xs">
             <option value="Tepat Waktu (≤ 06.35)">Tepat Waktu (≤ 06.35)</option>
             <option value="Terlambat Sambut Pagi">Terlambat Sambut Pagi</option>
-            <option value="Terlambat (> 06.35)">Terlambat (> 06.35)</option>
+            <option value="Terlambat">Terlambat</option>
             <option value="Izin / Tugas Luar">Izin / Tugas Luar</option>
           </select>
         </div>
@@ -3635,12 +3635,16 @@
         } else {
           const timeInMinutes = now.getHours() * 60 + now.getMinutes();
           const limitSambutPagi = 6 * 60 + 35; // 06.35 WIB
+          const limitMasukKerja = 6 * 60 + 40; // 06.40 WIB
           if (timeInMinutes <= limitSambutPagi) {
             statusBadge.innerHTML = '<span class="w-1.5 h-1.5 rounded-full bg-emerald-400 animate-pulse"></span><span>Tepat Waktu (≤ 06.35)</span>';
             statusBadge.className = "inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-bold tracking-tight bg-emerald-500/15 text-emerald-300 border border-emerald-500/30 whitespace-nowrap shadow-sm";
-          } else {
-            statusBadge.innerHTML = '<span class="w-1.5 h-1.5 rounded-full bg-amber-400"></span><span>Terlambat (> 06.35)</span>';
+          } else if (timeInMinutes <= limitMasukKerja) {
+            statusBadge.innerHTML = '<span class="w-1.5 h-1.5 rounded-full bg-amber-400"></span><span>Terlambat Sambut Pagi</span>';
             statusBadge.className = "inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-bold tracking-tight bg-amber-500/15 text-amber-300 border border-amber-500/30 whitespace-nowrap shadow-sm";
+          } else {
+            statusBadge.innerHTML = '<span class="w-1.5 h-1.5 rounded-full bg-rose-400"></span><span>Terlambat</span>';
+            statusBadge.className = "inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-bold tracking-tight bg-rose-500/15 text-rose-300 border border-rose-500/30 whitespace-nowrap shadow-sm";
           }
         }
       }
@@ -3868,6 +3872,40 @@
         return 'Tidak Sambut Pagi';
       }
       return 'Sambut Pagi';
+    }
+
+    // Helper: Evaluasi Status Ketepatan Waktu Berdasarkan Jam Kedatangan:
+    // - Rentang 06.00 - 06.35: Batas rentang waktu Sambut Pagi (Tepat Waktu)
+    // - Di atas 06.35 - 06.40: Terlambat Sambut Pagi
+    // - Di atas 06.40: Terlambat
+    function tentukanKetepatanDariJam(jamStr, statusTercatat, piketVal) {
+      if (isOffStatus(piketVal)) return 'OFF (Tidak Hadir)';
+      if (!jamStr || jamStr.trim() === '-') return '-';
+
+      const match = String(jamStr).match(/(\d{1,2})[:.](\d{2})/);
+      if (match) {
+        const h = parseInt(match[1], 10);
+        const m = parseInt(match[2], 10);
+        const totalMin = h * 60 + m;
+
+        const limitSambutPagi = 6 * 60 + 35; // 06.35 WIB
+        const limitMasukKerja = 6 * 60 + 40; // 06.40 WIB
+
+        if (totalMin <= limitSambutPagi) {
+          return 'Tepat Waktu (≤ 06.35)';
+        } else if (totalMin <= limitMasukKerja) {
+          return 'Terlambat Sambut Pagi';
+        } else {
+          return 'Terlambat';
+        }
+      }
+
+      if (statusTercatat) {
+        if (statusTercatat.includes('Terlambat Sambut Pagi')) return 'Terlambat Sambut Pagi';
+        if (statusTercatat.includes('Terlambat')) return 'Terlambat';
+        if (statusTercatat.includes('Tepat') || statusTercatat.includes('Sambut Pagi')) return 'Tepat Waktu (≤ 06.35)';
+      }
+      return 'Tepat Waktu (≤ 06.35)';
     }
 
     // Ambil Riwayat Presensi Hari Ini (dengan urutan kehadiran paling AWAL berada di posisi ATAS)
@@ -4261,9 +4299,9 @@
       // Jika status OFF (Tidak Ada Jadwal), tandai sebagai tidak hadir (jam = '-')
       if (isOffStatus(piket)) {
         jamKedatangan = "-";
-        statusKetepatan = "OFF (Tidak Ada Jadwal)";
+        statusKetepatan = "OFF (Tidak Hadir)";
       } else {
-        // Otomatis tentukan status ketepatan waktu berdasarkan batas sambut pagi (06.35 WIB)
+        // Otomatis tentukan status ketepatan waktu berdasarkan batas sambut pagi (06.35 WIB) & batas kerja (06.40 WIB)
         const timeInMinutes = h * 60 + m;
         const limitSambutPagi = 6 * 60 + 35; // 06.35 WIB
         const limitMasukKerja = 6 * 60 + 40; // 06.40 WIB
@@ -4273,7 +4311,19 @@
         } else if (timeInMinutes <= limitMasukKerja) {
           statusKetepatan = "Terlambat Sambut Pagi";
         } else {
-          statusKetepatan = "Terlambat (> 06.35)";
+          statusKetepatan = "Terlambat";
+        }
+      }
+
+      // Tentukan keterangan otomatis jika pengguna tidak mengisi keterangan manual
+      let finalKeterangan = keterangan;
+      if (!finalKeterangan || finalKeterangan === '-') {
+        if (isOffStatus(piket)) {
+          finalKeterangan = "OFF (Tidak Ada Jadwal)";
+        } else if (statusKetepatan === "Terlambat Sambut Pagi") {
+          finalKeterangan = "Terlambat Sambut Pagi";
+        } else if (statusKetepatan === "Terlambat") {
+          finalKeterangan = "Terlambat";
         }
       }
 
@@ -4292,7 +4342,7 @@
           jam: jamKedatangan,
           status: statusKetepatan,
           piket: piket,
-          keterangan: keterangan
+          keterangan: finalKeterangan
         };
       } else {
         dataPresensi.unshift({
@@ -4304,7 +4354,7 @@
           jam: jamKedatangan,
           status: statusKetepatan,
           piket: piket,
-          keterangan: keterangan
+          keterangan: finalKeterangan
         });
       }
 
@@ -4360,10 +4410,22 @@
           badgeClass = "bg-amber-50 text-amber-700 border border-amber-200/80";
         }
 
-        const keteranganHtml = item.keterangan ? `
+        const statusKetepatan = tentukanKetepatanDariJam(item.jam, item.status, item.piket);
+        let ketText = item.keterangan ? item.keterangan.trim() : '';
+        if (!ketText || ketText === '-') {
+          if (statusVal === 'OFF (Tidak Ada Jadwal)' || statusKetepatan === 'OFF (Tidak Hadir)') {
+            ketText = 'OFF (Tidak Ada Jadwal)';
+          } else if (statusKetepatan === 'Terlambat Sambut Pagi') {
+            ketText = 'Terlambat Sambut Pagi';
+          } else if (statusKetepatan === 'Terlambat') {
+            ketText = 'Terlambat';
+          }
+        }
+
+        const keteranganHtml = ketText ? `
           <div class="mt-1 flex items-center gap-1 text-[11px] font-medium text-slate-500 bg-slate-50 px-2 py-0.5 rounded-md border border-slate-200/60 w-fit">
-            <svg class="w-3 h-3 text-emerald-600 shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M7 8h10M7 12h4m1 8l-4-4H5a2 2 0 01-2-2V6a2 2 0 012-2h14a2 2 0 012 2v8a2 2 0 01-2 2h-3l-4 4z"></path></svg>
-            <span class="truncate max-w-[180px]" title="${escapeHtml(item.keterangan)}">${escapeHtml(item.keterangan)}</span>
+            <svg class="w-3 h-3 ${ketText.includes('Terlambat') ? 'text-amber-600' : 'text-emerald-600'} shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M7 8h10M7 12h4m1 8l-4-4H5a2 2 0 01-2-2V6a2 2 0 012-2h14a2 2 0 012 2v8a2 2 0 01-2 2h-3l-4 4z"></path></svg>
+            <span class="truncate max-w-[180px]" title="${escapeHtml(ketText)}">${escapeHtml(ketText)}</span>
           </div>
         ` : '';
 
@@ -4502,10 +4564,10 @@
           badgeEl.className = "inline-flex items-center px-2 py-0.5 rounded-full text-[10px] font-bold bg-amber-100 text-amber-800 border border-amber-200";
         }
       } else {
-        calculatedStatus = "Terlambat (> 06.35)";
+        calculatedStatus = "Terlambat";
         if (badgeEl) {
           badgeEl.innerText = "Terlambat";
-          badgeEl.className = "inline-flex items-center px-2 py-0.5 rounded-full text-[10px] font-bold bg-amber-100 text-amber-800 border border-amber-200";
+          badgeEl.className = "inline-flex items-center px-2 py-0.5 rounded-full text-[10px] font-bold bg-rose-100 text-rose-800 border border-rose-200";
         }
       }
 
@@ -4524,11 +4586,11 @@
       const keterangan = document.getElementById('edit-presensi-keterangan').value.trim();
 
       let jamFormatted = "-";
-      let status = "OFF (Tidak Ada Jadwal)";
+      let status = "OFF (Tidak Hadir)";
 
       if (isOffStatus(piket)) {
         jamFormatted = "-";
-        status = "OFF (Tidak Ada Jadwal)";
+        status = "OFF (Tidak Hadir)";
       } else {
         const timeVal = document.getElementById('edit-presensi-time').value;
         const parts = timeVal ? timeVal.split(':') : ['06', '30'];
@@ -4538,18 +4600,29 @@
         status = document.getElementById('edit-presensi-status-select').value;
       }
 
+      let finalKeterangan = keterangan;
+      if (!finalKeterangan || finalKeterangan === '-') {
+        if (isOffStatus(piket)) {
+          finalKeterangan = "OFF (Tidak Ada Jadwal)";
+        } else if (status === "Terlambat Sambut Pagi") {
+          finalKeterangan = "Terlambat Sambut Pagi";
+        } else if (status === "Terlambat") {
+          finalKeterangan = "Terlambat";
+        }
+      }
+
       dataPresensi[idx] = {
         ...dataPresensi[idx],
         jam: jamFormatted,
         status: status,
         piket: piket,
-        keterangan: keterangan
+        keterangan: finalKeterangan
       };
 
       saveDataPresensi();
       kirimKeGoogleSheets('simpanPresensi', { data: dataPresensi[idx] });
       tutupModalEditPresensi();
-      alert(`✅ Presensi ${dataPresensi[idx].nama} berhasil diperbarui:\n- Status: ${piket}\n- Jam: ${jamFormatted}\n- Keterangan: ${keterangan || '-'}`);
+      alert(`✅ Presensi ${dataPresensi[idx].nama} berhasil diperbarui:\n- Status: ${piket}\n- Jam: ${jamFormatted}\n- Keterangan: ${finalKeterangan || '-'}`);
     }
 
     // ==============================================================================
@@ -4698,13 +4771,16 @@
             const initials = getInitials(item.nama);
             const avatarStyle = getAvatarClass(item.nama);
             const statusVal = normalizePiketStatus(item.piket);
+            const statusKetepatan = tentukanKetepatanDariJam(item.jam, item.status, item.piket);
             let badge = '<span class="inline-flex items-center px-2 py-0.5 rounded-full text-[10px] font-bold bg-emerald-50 text-emerald-700 border border-emerald-200/80">Tepat Waktu</span>';
             let jamDisplay = escapeHtml(item.jam || '-');
-            if (statusVal === 'OFF (Tidak Ada Jadwal)') {
+            if (statusVal === 'OFF (Tidak Ada Jadwal)' || statusKetepatan === 'OFF (Tidak Hadir)') {
               badge = '<span class="inline-flex items-center px-2 py-0.5 rounded-full text-[10px] font-bold bg-slate-100 text-slate-700 border border-slate-300">OFF</span>';
               jamDisplay = '-';
-            } else if ((item.status || '').includes('Terlambat')) {
-              badge = '<span class="inline-flex items-center px-2 py-0.5 rounded-full text-[10px] font-bold bg-amber-50 text-amber-700 border border-amber-200/80">Terlambat</span>';
+            } else if (statusKetepatan === 'Terlambat Sambut Pagi') {
+              badge = '<span class="inline-flex items-center px-2 py-0.5 rounded-full text-[10px] font-bold bg-amber-50 text-amber-700 border border-amber-200/80">Terlambat Sambut</span>';
+            } else if (statusKetepatan === 'Terlambat') {
+              badge = '<span class="inline-flex items-center px-2 py-0.5 rounded-full text-[10px] font-bold bg-rose-50 text-rose-700 border border-rose-200/80">Terlambat</span>';
             }
 
             tr.innerHTML = `
@@ -4850,17 +4926,36 @@
           badgePiketStyle = 'bg-amber-50 text-amber-700 border border-amber-200/80';
         }
 
-        // Ketepatan Waktu & Jam Kehadiran
-        let statusKetepatan = item.status || 'Tepat Waktu (≤ 06.35)';
+        // Ketepatan Waktu & Jam Kehadiran Sesuai Rentang Waktu:
+        // - 06.00 - 06.35: Batas Waktu Sambut Pagi (Tepat Waktu)
+        // - > 06.35 - 06.40: Terlambat Sambut Pagi
+        // - > 06.40: Terlambat
+        let statusKetepatan = tentukanKetepatanDariJam(item.jam, item.status, item.piket);
         let displayJam = item.jam || '-';
         let badgeKetepatanStyle = 'bg-emerald-50 text-emerald-700 border border-emerald-200/80';
 
-        if (statusVal === 'OFF (Tidak Ada Jadwal)') {
+        if (statusVal === 'OFF (Tidak Ada Jadwal)' || statusKetepatan === 'OFF (Tidak Hadir)') {
           statusKetepatan = 'OFF (Tidak Hadir)';
           displayJam = '-';
           badgeKetepatanStyle = 'bg-slate-100 text-slate-600 border border-slate-300';
-        } else if (statusKetepatan.toLowerCase().includes('terlambat')) {
-          badgeKetepatanStyle = 'bg-amber-50 text-amber-700 border border-amber-200/80';
+        } else if (statusKetepatan === 'Terlambat Sambut Pagi') {
+          badgeKetepatanStyle = 'bg-amber-50 text-amber-700 border border-amber-200/80 font-medium';
+        } else if (statusKetepatan === 'Terlambat') {
+          badgeKetepatanStyle = 'bg-rose-50 text-rose-700 border border-rose-200/80 font-medium';
+        }
+
+        // Tentukan Keterangan Otomatis jika kosong / tanda setrip
+        let ketText = item.keterangan ? item.keterangan.trim() : '';
+        if (!ketText || ketText === '-') {
+          if (statusVal === 'OFF (Tidak Ada Jadwal)' || statusKetepatan === 'OFF (Tidak Hadir)') {
+            ketText = 'OFF (Tidak Ada Jadwal)';
+          } else if (statusKetepatan === 'Terlambat Sambut Pagi') {
+            ketText = 'Terlambat Sambut Pagi';
+          } else if (statusKetepatan === 'Terlambat') {
+            ketText = 'Terlambat';
+          } else {
+            ketText = '-';
+          }
         }
 
         tr.innerHTML = `
@@ -4883,7 +4978,7 @@
           <td class="px-3.5 py-3 text-center whitespace-nowrap">
             <span class="inline-flex items-center px-2 py-0.5 rounded-md text-xs font-semibold ${badgePiketStyle}">${statusVal}</span>
           </td>
-          <td class="px-3.5 py-3 text-xs text-slate-500 italic">${escapeHtml(item.keterangan || '-')}</td>
+          <td class="px-3.5 py-3 text-xs ${ketText !== '-' ? 'font-medium text-slate-700' : 'text-slate-400 italic'}">${escapeHtml(ketText)}</td>
         `;
         tbody.appendChild(tr);
       });
@@ -4992,12 +5087,25 @@
 
       const rows = filtered.map((item, idx) => {
         const statusVal = normalizePiketStatus(item.piket);
-        let statusKetepatan = item.status || 'Tepat Waktu (≤ 06.35)';
+        const statusKetepatan = tentukanKetepatanDariJam(item.jam, item.status, item.piket);
         let jamKehadiran = item.jam || '-';
-        if (statusVal === 'OFF (Tidak Ada Jadwal)') {
-          statusKetepatan = 'OFF (Tidak Hadir)';
+        if (statusVal === 'OFF (Tidak Ada Jadwal)' || statusKetepatan === 'OFF (Tidak Hadir)') {
           jamKehadiran = '-';
         }
+
+        let ketText = item.keterangan ? item.keterangan.trim() : '';
+        if (!ketText || ketText === '-') {
+          if (statusVal === 'OFF (Tidak Ada Jadwal)' || statusKetepatan === 'OFF (Tidak Hadir)') {
+            ketText = 'OFF (Tidak Ada Jadwal)';
+          } else if (statusKetepatan === 'Terlambat Sambut Pagi') {
+            ketText = 'Terlambat Sambut Pagi';
+          } else if (statusKetepatan === 'Terlambat') {
+            ketText = 'Terlambat';
+          } else {
+            ketText = '-';
+          }
+        }
+
         return {
           "No": idx + 1,
           "Tanggal": item.tanggal || targetDate,
@@ -5006,7 +5114,7 @@
           "Jam Kehadiran": jamKehadiran,
           "Ketepatan Waktu": statusKetepatan,
           "Status Sambut Pagi": statusVal,
-          "Keterangan": item.keterangan || '-'
+          "Keterangan": ketText
         };
       });
 

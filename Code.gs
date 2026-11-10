@@ -663,7 +663,7 @@ function rekamPresensiPegawai(data) {
     let status = data.status;
     if (!status) {
       if (statusPiket === 'OFF (Tidak Ada Jadwal)') {
-        status = 'OFF (Tidak Ada Jadwal)';
+        status = 'OFF (Tidak Hadir)';
       } else {
         const hhmm = Utilities.formatDate(now, CONFIG.TIMEZONE, 'HH:mm');
         if (hhmm <= CONFIG.BATAS_SAMBUT_PAGI) {
@@ -671,8 +671,19 @@ function rekamPresensiPegawai(data) {
         } else if (hhmm <= CONFIG.BATAS_MASUK_KERJA) {
           status = 'Terlambat Sambut Pagi';
         } else {
-          status = 'Terlambat (> 06.35)';
+          status = 'Terlambat';
         }
+      }
+    }
+
+    let finalKeterangan = data.keterangan ? String(data.keterangan).trim() : '';
+    if (!finalKeterangan || finalKeterangan === '-') {
+      if (statusPiket === 'OFF (Tidak Ada Jadwal)' || status === 'OFF (Tidak Hadir)') {
+        finalKeterangan = 'OFF (Tidak Ada Jadwal)';
+      } else if (status === 'Terlambat Sambut Pagi') {
+        finalKeterangan = 'Terlambat Sambut Pagi';
+      } else if (status === 'Terlambat') {
+        finalKeterangan = 'Terlambat';
       }
     }
 
@@ -700,7 +711,7 @@ function rekamPresensiPegawai(data) {
         jamKehadiran,
         status,
         statusPiket,
-        data.keterangan || '',
+        finalKeterangan,
         timestamp
       ]]);
 
@@ -715,7 +726,8 @@ function rekamPresensiPegawai(data) {
           nama: data.nama,
           jam: jamKehadiran,
           status: status,
-          piket: statusPiket
+          piket: statusPiket,
+          keterangan: finalKeterangan
         }
       };
     } else {
@@ -729,7 +741,7 @@ function rekamPresensiPegawai(data) {
         jamKehadiran,
         status,
         statusPiket,
-        data.keterangan || '',
+        finalKeterangan,
         timestamp
       ];
 
