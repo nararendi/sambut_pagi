@@ -4404,13 +4404,16 @@
 
         const initials = getInitials(item.nama);
         const avatarStyle = getAvatarClass(item.nama);
+        const statusVal = normalizePiketStatus(item.piket);
+        const statusKetepatan = tentukanKetepatanDariJam(item.jam, item.status, item.piket);
 
-        let badgeClass = "bg-emerald-50 text-emerald-700 border border-emerald-200/80";
-        if (item.status && item.status.includes('Terlambat')) {
-          badgeClass = "bg-amber-50 text-amber-700 border border-amber-200/80";
+        let badgeStyle = 'bg-emerald-50 text-emerald-700 border border-emerald-200/80';
+        if (statusVal === 'OFF (Tidak Ada Jadwal)') {
+          badgeStyle = 'bg-slate-100 text-slate-700 border border-slate-300 font-semibold';
+        } else if (statusVal === 'Tidak Sambut Pagi') {
+          badgeStyle = 'bg-amber-50 text-amber-700 border border-amber-200/80';
         }
 
-        const statusKetepatan = tentukanKetepatanDariJam(item.jam, item.status, item.piket);
         let ketText = item.keterangan ? item.keterangan.trim() : '';
         if (!ketText || ketText === '-') {
           if (statusVal === 'OFF (Tidak Ada Jadwal)' || statusKetepatan === 'OFF (Tidak Hadir)') {
@@ -4435,14 +4438,6 @@
             <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"></path></svg>
           </button>
         ` : '';
-
-        const statusVal = normalizePiketStatus(item.piket);
-        let badgeStyle = 'bg-emerald-50 text-emerald-700 border border-emerald-200/80';
-        if (statusVal === 'OFF (Tidak Ada Jadwal)') {
-          badgeStyle = 'bg-slate-100 text-slate-700 border border-slate-300 font-semibold';
-        } else if (statusVal === 'Tidak Sambut Pagi') {
-          badgeStyle = 'bg-amber-50 text-amber-700 border border-amber-200/80';
-        }
 
         const displayJam = (statusVal === 'OFF (Tidak Ada Jadwal)' && (!item.jam || item.jam === '-' || item.jam.includes('WIB')))
           ? '-'
